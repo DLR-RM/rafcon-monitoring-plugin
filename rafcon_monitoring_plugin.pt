@@ -5,7 +5,8 @@ DESCRIPTION         = This rafcon plugin enables monitoring rafcon instances via
 VERSION             = 0.0.1
 DOCUMENTATION       = http://www.google.de
 SUPPORTED_LANGUAGES = python
-DEPENDS =
+# should it also depend from rafcon??
+DEPENDS             = gtk_etc==0, gtk_etc_python==0, python_yaml_configuration==0, python_acknowledged_udp==0
 
 ADDITIONAL_ENV      = RAFCON_PLUGIN_PATH=$${RAFCON_PLUGIN_PATH}:${PKGROOT}/lib/python2.7
 ARCHS               = sled11-x86-gcc4.x, sled11-x86_64-gcc4.x, osl42-x86_64

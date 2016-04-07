@@ -1,0 +1,17 @@
+PTVERSION           = 2
+NAME                = rafcon_monitoring_plugin
+MAINTAINER          = Sebastian Brunner <sebastian.brunner@dlr.de>
+DESCRIPTION         = This rafcon plugin enables monitoring rafcon instances via unsecure UDP/IP
+VERSION             = 0.0.1
+DOCUMENTATION       = http://www.google.de
+SUPPORTED_LANGUAGES = python
+DEPENDS =
+
+ADDITIONAL_ENV      = RAFCON_PLUGIN_PATH=$${RAFCON_PLUGIN_PATH}:${PKGROOT}/lib/python2.7
+ARCHS               = sled11-x86-gcc4.x, sled11-x86_64-gcc4.x, osl42-x86_64
+# actually this is not needed directly for running the monitoring plugin but just for development
+PYTHON_PATHS        = ${PKGROOT}/lib/python2.7
+
+[install]
+python/monitoring | !*.pyc => lib/python2.7/monitoring
+

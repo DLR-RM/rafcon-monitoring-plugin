@@ -51,7 +51,6 @@ class MonitoringManager:
         :param setup_config: the setup configuration for the networking
         :return:
         """
-        global_network_config.load(path=setup_config['net_config_path'])
 
         if global_network_config.get_config_value("SERVER", True):
             if not self.endpoint:

@@ -50,6 +50,7 @@ def post_init(setup_config):
 
         import threading
         init_thread = threading.Thread(target=initialize_monitoring_manager)
+        init_thread.daemon = True
         init_thread.start()
 
 

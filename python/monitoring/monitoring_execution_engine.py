@@ -8,7 +8,7 @@
 
 """
 
-from rafcon.statemachine.execution.statemachine_execution_engine import StatemachineExecutionEngine
+from rafcon.statemachine.execution.state_machine_execution_engine import StateMachineExecutionEngine
 from rafcon.statemachine.enums import StateMachineExecutionStatus
 
 from acknowledged_udp.udp_client import UdpClient
@@ -19,7 +19,7 @@ from rafcon.utils import log
 logger = log.get_logger(__name__)
 
 
-class MonitoringExecutionEngine(StatemachineExecutionEngine):
+class MonitoringExecutionEngine(StateMachineExecutionEngine):
     """
     This class inherits from the StatemachineExecutionEngine and thus can replace it. It is used by a monitoring
      client and overwrites common execution functions. The functionality of the functions to control
@@ -27,12 +27,12 @@ class MonitoringExecutionEngine(StatemachineExecutionEngine):
     """
 
     def __init__(self, sm_manager, communication_endpoint):
-        StatemachineExecutionEngine.__init__(self, sm_manager)
+        StateMachineExecutionEngine.__init__(self, sm_manager)
         self.communication_endpoint = communication_endpoint
 
     # overwrite all execution functions
     def start(self,  state_machine_id=None, start_state_path=None):
-        self.execution_mode = StateMachineExecutionStatus.STARTED
+        self.set_execution_mode(StateMachineExecutionStatus.STARTED)
         if start_state_path:
             logger.info("Starting state machine on remote server from path {0} ...".format(start_state_path))
             protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + start_state_path)
@@ -42,37 +42,37 @@ class MonitoringExecutionEngine(StatemachineExecutionEngine):
             self.send_current_execution_mode()
 
     def pause(self):
-        self.execution_mode = StateMachineExecutionStatus.PAUSED
+        self.set_execution_mode(StateMachineExecutionStatus.PAUSED)
         logger.info("Pausing state machine on remote server ...")
         self.send_current_execution_mode()
 
     def stop(self):
-        self.execution_mode = StateMachineExecutionStatus.STOPPED
+        self.set_execution_mode(StateMachineExecutionStatus.STOPPED)
         logger.info("Stopping state machine on remote server ...")
         self.send_current_execution_mode()
 
     def step_mode(self):
-        self.execution_mode = StateMachineExecutionStatus.FORWARD_INTO
+        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_INTO)
         logger.info("Step mode activated on remote server ...")
         self.send_current_execution_mode()
 
     def step_into(self):
-        self.execution_mode = StateMachineExecutionStatus.FORWARD_INTO
+        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_INTO)
         logger.info("Step into on remote server ...")
         self.send_current_execution_mode()
 
     def step_over(self):
-        self.execution_mode = StateMachineExecutionStatus.FORWARD_OVER
+        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_OVER)
         logger.info("Step over on remote server ...")
         self.send_current_execution_mode()
 
     def step_out(self):
-        self.execution_mode = StateMachineExecutionStatus.FORWARD_OUT
+        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_OUT)
         logger.info("Step out on remote server ...")
         self.send_current_execution_mode()
 
     def backward_step(self):
-        self.execution_mode = StateMachineExecutionStatus.BACKWARD
+        self.set_execution_mode(StateMachineExecutionStatus.BACKWARD)
         logger.info("Step backward on remote server ...")
         self.send_current_execution_mode()
 
@@ -80,7 +80,7 @@ class MonitoringExecutionEngine(StatemachineExecutionEngine):
         logger.info("Run to selected stat on remote server ...")
         self.run_to_states = []
         self.run_to_states.append(path)
-        self.execution_mode = StateMachineExecutionStatus.RUN_TO_SELECTED_STATE
+        self.set_execution_mode(StateMachineExecutionStatus.RUN_TO_SELECTED_STATE)
         protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + self.run_to_states[0])
         self.send_current_execution_mode(protocol)
 

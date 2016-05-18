@@ -32,7 +32,7 @@ class MonitoringExecutionEngine(StatemachineExecutionEngine):
 
     # overwrite all execution functions
     def start(self,  state_machine_id=None, start_state_path=None):
-        self.set_execution_mode(StateMachineExecutionStatus.STARTED)
+        self.execution_mode = StateMachineExecutionStatus.STARTED
         if start_state_path:
             logger.info("Starting state machine on remote server from path {0} ...".format(start_state_path))
             protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + start_state_path)
@@ -42,37 +42,37 @@ class MonitoringExecutionEngine(StatemachineExecutionEngine):
             self.send_current_execution_mode()
 
     def pause(self):
-        self.set_execution_mode(StateMachineExecutionStatus.PAUSED)
+        self.execution_mode = StateMachineExecutionStatus.PAUSED
         logger.info("Pausing state machine on remote server ...")
         self.send_current_execution_mode()
 
     def stop(self):
-        self.set_execution_mode(StateMachineExecutionStatus.STOPPED)
+        self.execution_mode = StateMachineExecutionStatus.STOPPED
         logger.info("Stopping state machine on remote server ...")
         self.send_current_execution_mode()
 
     def step_mode(self):
-        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_INTO)
+        self.execution_mode = StateMachineExecutionStatus.FORWARD_INTO
         logger.info("Step mode activated on remote server ...")
         self.send_current_execution_mode()
 
     def step_into(self):
-        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_INTO)
+        self.execution_mode = StateMachineExecutionStatus.FORWARD_INTO
         logger.info("Step into on remote server ...")
         self.send_current_execution_mode()
 
     def step_over(self):
-        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_OVER)
+        self.execution_mode = StateMachineExecutionStatus.FORWARD_OVER
         logger.info("Step over on remote server ...")
         self.send_current_execution_mode()
 
     def step_out(self):
-        self.set_execution_mode(StateMachineExecutionStatus.FORWARD_OUT)
+        self.execution_mode = StateMachineExecutionStatus.FORWARD_OUT
         logger.info("Step out on remote server ...")
         self.send_current_execution_mode()
 
     def backward_step(self):
-        self.set_execution_mode(StateMachineExecutionStatus.BACKWARD)
+        self.execution_mode = StateMachineExecutionStatus.BACKWARD
         logger.info("Step backward on remote server ...")
         self.send_current_execution_mode()
 
@@ -80,7 +80,7 @@ class MonitoringExecutionEngine(StatemachineExecutionEngine):
         logger.info("Run to selected stat on remote server ...")
         self.run_to_states = []
         self.run_to_states.append(path)
-        self.set_execution_mode(StateMachineExecutionStatus.RUN_TO_SELECTED_STATE)
+        self.execution_mode = StateMachineExecutionStatus.RUN_TO_SELECTED_STATE
         protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + self.run_to_states[0])
         self.send_current_execution_mode(protocol)
 

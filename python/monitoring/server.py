@@ -130,7 +130,7 @@ class MonitoringServer(UdpServer):
         :param address: the address (port, ip-address) of the remote server
         :return:
         """
-        logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
+        # logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
 
         assert isinstance(message, Protocol)
         if message.message_type is MessageType.COMMAND:

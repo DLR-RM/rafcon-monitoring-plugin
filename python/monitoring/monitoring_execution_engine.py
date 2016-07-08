@@ -10,10 +10,9 @@
 
 from rafcon.statemachine.execution.state_machine_execution_engine import StateMachineExecutionEngine
 from rafcon.statemachine.enums import StateMachineExecutionStatus
+from monitoring.model.network_model import network_manager_model
+from acknowledged_udp.protocol import Protocol, MessageType
 
-from acknowledged_udp.udp_client import UdpClient
-from acknowledged_udp.protocol import Protocol, MessageType, STATE_EXECUTION_STATUS_SEPARATOR
-from acknowledged_udp.config import global_network_config
 
 from rafcon.utils import log
 logger = log.get_logger(__name__)
@@ -83,6 +82,8 @@ class MonitoringExecutionEngine(StateMachineExecutionEngine):
         self.set_execution_mode(StateMachineExecutionStatus.RUN_TO_SELECTED_STATE)
         protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + self.run_to_states[0])
         self.send_current_execution_mode(protocol)
+        network_manager_model.add_to_message_list(str(self.status.execution_mode.value) + "@" + self.run_to_states[0],
+                                                  self.communication_endpoint.server_address, "send")
 
     def send_current_execution_mode(self, protocol=None):
         """
@@ -94,5 +95,7 @@ class MonitoringExecutionEngine(StateMachineExecutionEngine):
         else:
             protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value))
             self.communication_endpoint.send_message_non_acknowledged(protocol, self.communication_endpoint.server_address)
+            network_manager_model.add_to_message_list(str(self.status.execution_mode.value),
+                                                      self.communication_endpoint.server_address, "send")
         # logger.info("The current execution mode is going to be sent: {0}".format(protocol))
 

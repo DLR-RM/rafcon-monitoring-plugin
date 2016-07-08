@@ -7,16 +7,9 @@
 
 
 """
-
 from client import MonitoringClient
 from server import MonitoringServer
 from acknowledged_udp.config import global_network_config
-
-from rafcon.statemachine.states.hierarchy_state import HierarchyState
-from rafcon.statemachine.states.container_state import ContainerState
-from rafcon.statemachine.states.execution_state import ExecutionState
-from rafcon.statemachine.states.library_state import LibraryState
-from rafcon.statemachine.singleton import state_machine_manager
 from rafcon.statemachine.singleton import argument_parser
 
 from yaml_configuration.config import config_path
@@ -26,7 +19,7 @@ from rafcon.utils import log
 logger = log.get_logger(__name__)
 
 
-class MonitoringManager:
+class MonitoringManager():
     """
     This class holds all monitoring relevant objects. It is configured via a config via given on startup or loaded
     from the default RAFCON config location.
@@ -44,6 +37,8 @@ class MonitoringManager:
 
         self.endpoint = None
         self.endpoint_initialized = False
+        self.config = None
+        self.config_flag = False
 
     def initialize(self, setup_config):
         """
@@ -51,25 +46,20 @@ class MonitoringManager:
         :param setup_config: the setup configuration for the networking
         :return:
         """
-
+        if not self.config_flag:
+            self.config = setup_config
+            self.config_flag = True
         if global_network_config.get_config_value("SERVER", True):
             if not self.endpoint:
                 self.endpoint = MonitoringServer()
             self.endpoint_initialized = self.endpoint.connect()
+
         else:
             if not self.endpoint:
                 self.endpoint = MonitoringClient()
             self.endpoint_initialized = self.endpoint.connect()
 
         return self.endpoint_initialized
-
-    def shutdown(self):
-        """
-        A function to shutdown the communication endpoint
-        :return:
-        """
-        if self.endpoint:
-            self.endpoint.shutdown()
 
     @staticmethod
     def networking_enabled():
@@ -78,6 +68,58 @@ class MonitoringManager:
         :return:
         """
         return global_network_config.get_config_value("ENABLED", False)
+
+    def disconnect(self, address):
+        """
+        A method to disconnect client- or serveraddress
+        :param address: address('ip', port)
+        :return:
+        """
+        self.endpoint.disconnect(address)
+
+    def disable(self, address):
+        """
+        A method to en- and disable client from server
+        :param address: client address ('ip', port)
+        :return:
+        """
+        self.endpoint.disable(address)
+
+    def reconnect(self, address):
+        """
+        A method to reconnect client to server
+        :param address: client address ('ip', port)
+        :return:
+        """
+        self.endpoint.reconnect(address)
+
+    def get_config_path(self):
+        return self.config['net_config_path']
+
+    def get_host(self):
+        return self.endpoint.get_host()
+
+    def shutdown(self):
+        """
+        A method to shutdown the plugin. Triggert when shutting down Rafcon
+        :return:
+        """
+        if self.endpoint:
+            self.endpoint.shutdown()
+
+    def reinitialize(self):
+        """
+        A method to reinitialize the plugin. Called when applying changes in config
+        Disconnects all connections and connects with new config
+        :return:
+        """
+        self.endpoint.cut_connection()
+        if self.networking_enabled():
+            logger.info("Reinitializing...")
+            self.initialize(None)
+        else:
+            logger.error("Networking disabled!")
+
 
 # this variable is always created when the this module is imported, this is our common way to integrate plugins
 global_monitoring_manager = MonitoringManager()

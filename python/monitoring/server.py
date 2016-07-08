@@ -8,9 +8,7 @@
 
 """
 
-from rafcon.statemachine.states.hierarchy_state import HierarchyState
 from rafcon.statemachine.states.container_state import ContainerState
-from rafcon.statemachine.states.execution_state import ExecutionState
 from rafcon.statemachine.states.library_state import LibraryState
 from rafcon.statemachine.states.state import State
 from rafcon.statemachine.singleton import state_machine_manager, state_machine_execution_engine
@@ -19,6 +17,10 @@ from rafcon.statemachine.enums import StateMachineExecutionStatus
 from acknowledged_udp.config import global_network_config
 from acknowledged_udp.protocol import Protocol, MessageType, STATE_EXECUTION_STATUS_SEPARATOR
 from acknowledged_udp.udp_server import UdpServer
+
+from monitoring.model.network_model import network_manager_model
+from threading import Thread
+from monitoring.ping import pinger
 
 from rafcon.utils import log
 logger = log.get_logger(__name__)
@@ -38,6 +40,7 @@ class MonitoringServer(UdpServer):
         self.register_to_new_state_machines()
         self.register_all_statemachines()
         self.datagram_received_function = self.monitoring_data_received_function
+        self.client_ip = []
 
     def connect(self):
         """
@@ -47,6 +50,7 @@ class MonitoringServer(UdpServer):
         from twisted.internet import reactor
         self.connector = reactor.listenUDP(global_network_config.get_config_value("SERVER_UDP_PORT"), self)
         self.initialized = True
+        logger.info("Initialized")
         return True
 
     def register_to_new_state_machines(self):
@@ -120,6 +124,7 @@ class MonitoringServer(UdpServer):
         if self.initialized:
             for address in self.get_registered_endpoints():
                 self.send_message_non_acknowledged(protocol, address)
+                network_manager_model.add_to_message_list(message, address, "send")
         else:
             logger.warn("Not initialized yet")
 
@@ -131,9 +136,27 @@ class MonitoringServer(UdpServer):
         :return:
         """
         logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
-
         assert isinstance(message, Protocol)
-        if message.message_type is MessageType.COMMAND:
+
+        network_manager_model.add_to_message_list(message.message_content, address, "received")
+
+        if message.message_type is MessageType.REGISTER:
+            ident = message.message_content.split("@")
+            if 2 < ident:
+                ident.append(None)
+            network_manager_model.set_connected_ip_port(address)
+            network_manager_model.set_connected_id(address, ident[1])
+            network_manager_model.set_connected_status(address, "connected")
+
+            if ident[1]:
+                protocol = Protocol(MessageType.ID, global_network_config.get_config_value("SERVER_ID"))
+                self.send_message_non_acknowledged(protocol, address)
+                network_manager_model.add_to_message_list(protocol, address, "send")
+            thread = Thread(target=pinger, args=(address, ))
+            thread.daemon = True
+            thread.start()
+
+        elif message.message_type is MessageType.COMMAND and network_manager_model.get_connected_status(address) is not "disabled":
             received_command = message.message_content.split("@")
 
             execution_mode = StateMachineExecutionStatus(int(received_command[0]))
@@ -161,6 +184,10 @@ class MonitoringServer(UdpServer):
             elif execution_mode is StateMachineExecutionStatus.RUN_TO_SELECTED_STATE:
                 state_machine_execution_engine.run_to_selected_state(received_command[1])
 
+        elif message.message_type is MessageType.UNREGISTER:
+            network_manager_model.set_connected_status(address, "disconnected")
+            network_manager_model.delete_connection(address)
+
     def print_message(self, message, address):
         """
         A dummy funcion to just print a message from a certain address.
@@ -170,3 +197,36 @@ class MonitoringServer(UdpServer):
         """
         logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
 
+    def disconnect(self, address):
+        protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
+        logger.info("sending protocol {0}".format(str(protocol)))
+        self.send_message_non_acknowledged(protocol, address=address)
+        network_manager_model.set_connected_status(address, "disconnected")
+        network_manager_model.add_to_message_list("Disconnecting", address, "send")
+        # network_manager_model.delete_connection(address)
+
+    def disable(self, address):
+        if network_manager_model.get_connected_status(address) == "disabled":
+            protocol = Protocol(MessageType.DISABLE, "Enabling")
+            network_manager_model.set_connected_status(address, "connected")
+            network_manager_model.add_to_message_list("Enabling", address, "send")
+        else:
+            protocol = Protocol(MessageType.DISABLE, "Disabling")
+            network_manager_model.set_connected_status(address, "disabled")
+            network_manager_model.add_to_message_list("Disabling", address, "send")
+        logger.info("sending protocol {0}".format(str(protocol)))
+        self.send_message_non_acknowledged(protocol, address=address)
+
+    def get_host(self):
+        return self.connector.getHost()
+
+    def shutdown(self):
+        for address in network_manager_model.connected_ip_port:
+            protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
+            self.send_message_non_acknowledged(protocol, address)
+            network_manager_model.add_to_message_list("Shutdown", address, "send")
+
+    def cut_connection(self):
+        if self.initialized is True:
+            self.connector.connectionLost(reason=None)
+            self.initialized = False

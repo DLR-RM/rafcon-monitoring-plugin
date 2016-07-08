@@ -8,11 +8,16 @@
 
 """
 
+from twisted.internet.error import CannotListenError
 
 from monitoring_manager import global_monitoring_manager
 from acknowledged_udp.config import global_network_config
-from twisted.internet.error import CannotListenError
 from rafcon.utils import log
+from monitoring.views.server_connection import ServerView
+from monitoring.views.client_connection import ClientView
+from monitoring.controllers.server_controller import ServerController
+from monitoring.controllers.client_controller import ClientController
+from monitoring.model.network_model import network_manager_model
 logger = log.get_logger(__name__)
 
 
@@ -52,5 +57,33 @@ def post_init(setup_config):
         init_thread = threading.Thread(target=initialize_monitoring_manager)
         init_thread.daemon = True
         init_thread.start()
+
+
+def main_window_setup(main_window_controller):
+    """
+    Launches mvc of monitoring plugin. Called in controllers/main_window.py
+    :param main_window_controller:
+    :return:
+    """
+    if global_network_config.get_config_value("SERVER"):
+        main_window_controller.view.state_machine_server = ServerView()
+        main_window_controller.view.state_machine_server.show()
+        main_window_controller.view['network_alignment'].add(main_window_controller.view.state_machine_server.get_top_widget())
+        monitoring_manager_ctrl = ServerController(network_manager_model, main_window_controller.view.state_machine_server)
+    else:
+        main_window_controller.view.state_machine_client = ClientView()
+        main_window_controller.view.state_machine_client.show()
+        main_window_controller.view['network_alignment'].add(main_window_controller.view.state_machine_client.get_top_widget())
+        monitoring_manager_ctrl = ClientController(network_manager_model, main_window_controller.view.state_machine_client)
+    main_window_controller.add_controller('monitoring_manager_ctrl', monitoring_manager_ctrl)
+
+
+def pre_main_window_destruction(main_window_controller):
+    """
+    Triggert when shutting down main_window_controller. Clean shutdown of the plugin
+    :param main_window_controller:
+    :return:
+    """
+    global_monitoring_manager.shutdown()
 
 

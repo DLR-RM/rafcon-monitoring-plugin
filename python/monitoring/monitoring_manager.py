@@ -3,7 +3,7 @@
    :platform: Unix, Windows
    :synopsis: A module to hold all execution monitoring functionality
 
-.. moduleauthor:: Sebastian Brunner
+.. moduleauthor:: Benno Voggenreiter
 
 
 """
@@ -71,7 +71,7 @@ class MonitoringManager():
 
     def disconnect(self, address):
         """
-        A method to disconnect client- or serveraddress
+        A method to disconnect client- or server address
         :param address: address('ip', port)
         :return:
         """
@@ -94,14 +94,22 @@ class MonitoringManager():
         self.endpoint.reconnect(address)
 
     def get_config_path(self):
+        """
+        Function to get the config path
+        :return: path to network_config.yaml
+        """
         return self.config['net_config_path']
 
     def get_host(self):
+        """
+        Function to get connected hosts
+        :return: connected host
+        """
         return self.endpoint.get_host()
 
     def shutdown(self):
         """
-        A method to shutdown the plugin. Triggert when shutting down Rafcon
+        A method to shutdown the plugin. Triggered when shutting down Rafcon
         :return:
         """
         if self.endpoint:

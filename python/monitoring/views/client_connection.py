@@ -1,4 +1,4 @@
-# TODO: will be replaced soon
+
 from gtkmvc import View
 from monitoring import constants
 from rafcon.mvc import gui_helper

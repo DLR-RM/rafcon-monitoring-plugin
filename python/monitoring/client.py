@@ -4,7 +4,7 @@
    :synopsis: A module to care about receiving execution status from another RAFCON instance and showing it in its own
             RAFCON instance
 
-.. moduleauthor:: Sebastian Brunner
+.. moduleauthor:: Benno Voggenreiter
 
 
 """
@@ -22,7 +22,7 @@ from monitoring.model.network_model import network_manager_model
 from rafcon.utils import log
 
 from threading import Thread
-from monitoring.ping import pinger
+from monitoring.ping_endpoint import ping_endpoint
 
 logger = log.get_logger(__name__)
 
@@ -97,14 +97,14 @@ class MonitoringClient(UdpClient):
         else:
             logger.info("Cannot connect to server: Client disabled!")
 
-    def print_message(self, message, address):
-        """
-        Simply print an input message
-        :param message: the message to be printed
-        :param address: the address where the message originates
-        :return:
-        """
-        logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
+    # def print_message(self, message, address):
+    #     """
+    #     Simply print an input message
+    #     :param message: the message to be printed
+    #     :param address: the address where the message originates
+    #     :return:
+    #     """
+    #     logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
 
     def monitoring_data_received_function(self, message, address):
         """
@@ -121,7 +121,7 @@ class MonitoringClient(UdpClient):
             network_manager_model.set_connected_ip_port(address)
             network_manager_model.set_connected_id(address, message.message_content)
             network_manager_model.set_connected_status(address, "connected")
-            thread = Thread(target=pinger, args=(address, ))
+            thread = Thread(target=ping_endpoint, args=(address, ))
             thread.daemon = True
             thread.start()
 
@@ -142,7 +142,7 @@ class MonitoringClient(UdpClient):
                     self.disabled = False
                     self.connector.stopListening()
                     self.set_on_local_control()
-                    # self.avoid_timeout = False
+                    self.avoid_timeout = False
             if message.message_type is MessageType.DISABLE:
                     logger.info("Disabled monitoring by {0}".format(global_network_config.get_config_value("SERVER_IP")))
                     network_manager_model.set_connected_status(address, "disabled")
@@ -171,9 +171,11 @@ class MonitoringClient(UdpClient):
             protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
             logger.info("sending protocol {0}".format(str(protocol)))
             self.send_message_non_acknowledged(protocol, address=address)
+            # self.stopProtocol()
             self.connector.stopListening()
             # self.connector.connectionLost(reason=None)
             self.disabled = False
+            # self.avoid_timeout = False
             self.registered_to_server = False
             network_manager_model.set_connected_status(address, "disconnected")
             logger.info("Disconnected from Server")
@@ -184,16 +186,17 @@ class MonitoringClient(UdpClient):
 
     def shutdown(self):
         """
-        A function to unregister clients when shutting down Rafcon
+        A function to log off clients when shutting down Rafcon
         :return:
         """
         protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
-        self.send_message_non_acknowledged(protocol, self.server_address)
+        ack = self.send_message_non_acknowledged(protocol, self.server_address)
+        # self.stopProtocol()
 
     def set_on_local_control(self):
         """
         A function to replace the monitoring_execution_engine by the state_machine_execution_engine.
-        Triggert when disconnecting or disabling.
+        Triggered when disconnecting or disabling.
         :return:
         """
         self.registered_to_server = False
@@ -213,7 +216,7 @@ class MonitoringClient(UdpClient):
 
     def init_execution_engine(self, engine):
         """
-        A function to set the execution engine. Triggert by set_on_local_control() and connect()
+        A function to set the execution engine. Triggered by set_on_local_control() and connect()
         :param engine: target execution engine
         :return:
         """
@@ -240,10 +243,20 @@ class MonitoringClient(UdpClient):
         self.execution_engine_replaced = True
 
     def cut_connection(self):
+        """
+        Called when reinitializing the connection.
+        :return:
+        """
         self.execution_engine_replaced = False
-        # self.connector.connectionLost(reason=None)
         # self.avoid_timeout = False
-        pass
+        # self.stopProtocol()
+
+    def get_host(self):
+        """
+        Function to get connected hosts
+        :return: connected hosts
+        """
+        return self.connector.getHost()
 
 
 

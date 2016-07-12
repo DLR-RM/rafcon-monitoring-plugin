@@ -1,3 +1,12 @@
+"""
+.. module:: server controller
+   :platform: Unix, Windows
+   :synopsis: a module holding the controller for the ServerView with the client specific functions
+
+.. moduleauthor:: Benno Voggenreiter
+
+"""
+
 from gtk import ListStore, TreeIter
 
 from monitoring.model.network_model import network_manager_model
@@ -7,6 +16,7 @@ from rafcon.mvc.controllers.utils.extended_controller import ExtendedController
 from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants
+from monitoring.controllers.abstract_endpoint_controller import AbstractController
 
 logger = log.get_logger(__name__)
 
@@ -27,22 +37,6 @@ class ServerController(ExtendedController):
         self.history_list_store = ListStore(str)
         self.message_list_store = ListStore(str)
         self.network_manager_model = model
-        
-        self.params = {'CLIENT_UDP_PORT',
-                       'SERVER_IP',
-                       'SERVER_UDP_PORT',
-                       'SPACEBOT_CUP_MODE',
-                       'HASH_LENGTH',
-                       'SALT_LENGTH',
-                       'MAX_TIME_WAITING_FOR_ACKNOWLEDGEMENTS',
-                       'BURST_NUMBER',
-                       'TIME_BETWEEN_BURSTS',
-                       'SERVER',
-                       'HISTORY_LENGTH',
-                       'ENABLED',
-                       'TYPE',
-                       'SERVER_ID'
-                       }
 
     def register_view(self, view):
         """Called when the View was registered"""
@@ -59,16 +53,16 @@ class ServerController(ExtendedController):
         self.view['disable_btn1'].connect('clicked', self.on_disable_button_clicked)
         self.view['disconnect_btn1'].connect('clicked', self.on_disconnect_button_clicked)
         self.view['conf_tree_view'].set_model(self.config_list_store)
-        self.view['refresh_conf_btn'].connect('clicked', self.on_apply_button_clicked)
-        self.view['save_btn'].connect('clicked', self.on_save_button_clicked)
+        self.view['refresh_conf_btn'].connect('clicked', AbstractController.on_apply_button_clicked)
+        self.view['save_btn'].connect('clicked', AbstractController.on_save_button_clicked)
 
-        self.view['load_btn'].connect('clicked', self.on_load_button_clicked)
+        self.view['load_btn'].connect('clicked', AbstractController.on_load_button_clicked)
 
-        self.view['reload_btn'].connect('clicked', self.on_reload_button_clicked)
-        self.view['clear_btn'].connect('clicked', self.on_clear_button_clicked)
+        self.view['reload_btn'].connect('clicked', AbstractController.on_history_reload_button_clicked)
+        self.view['clear_btn'].connect('clicked', AbstractController.on_history_clear_button_clicked)
 
-        self.view['reload_btn1'].connect('clicked', self.on_message_reload_button_clicked)
-        self.view['clear_btn1'].connect('clicked', self.on_message_clear_button_clicked)
+        self.view['reload_btn1'].connect('clicked', AbstractController.on_message_reload_button_clicked)
+        self.view['clear_btn1'].connect('clicked', AbstractController.on_message_clear_button_clicked)
 
         self.network_manager_model.set_config_value(None, None)
 
@@ -226,29 +220,6 @@ class ServerController(ExtendedController):
         except RuntimeError as e:
             logger.exception(e)
 
-    @staticmethod
-    def on_save_button_clicked(self, *args):
-        """
-        Overwrites the network_monitoring_config.yaml with the current config values
-        :param args:
-        :return:
-        """
-        logger.info("Saving configurations...")
-        global_network_config.save_configuration()
-
-    @staticmethod
-    def on_apply_button_clicked(self, *args):
-        """
-        Reinitializes the server plugin with the current config
-        :param args:
-        :return:
-        """
-        for address in self.network_manager_model.connected_ip_port:
-            global_monitoring_manager.disconnect(address)
-        logger.info("Applying configurations...")
-        self.network_manager_model.delete_all()
-        global_monitoring_manager.reinitialize()
-
     def update_button(self, treeview):
         """
         Triggered when cursor in connection_tree_view changed (other connection selected).
@@ -294,52 +265,6 @@ class ServerController(ExtendedController):
                 self.message_list_store.append(["Message: {0} {1} from {2}".format(key[0], key[2], key[1])])
             elif key[2] == "send":
                 self.message_list_store.append(["Message: {0} {1} to {2}".format(key[0], key[2], key[1])])
-
-    @staticmethod
-    def on_reload_button_clicked(self, *args):
-        """
-        Reloads history_list_store
-        :param args:
-        :return:
-        """
-        self.network_manager_model.reload_history()
-
-    @staticmethod
-    def on_clear_button_clicked(self, *args):
-        """
-        Clears current history_list_store
-        :param args:
-        :return:
-        """
-        self.network_manager_model.clear_history()
-
-    @staticmethod
-    def on_message_reload_button_clicked(self, *args):
-        """
-        Reloads message_list_store
-        :param args:
-        :return:
-        """
-        self.network_manager_model.reload_message()
-
-    @staticmethod
-    def on_message_clear_button_clicked(self, *args):
-        """
-        Clears current message_list_store
-        :param args:
-        :return:
-        """
-        self.network_manager_model.clear_message()
-
-    @staticmethod
-    def on_load_button_clicked(self, *args):
-        """
-        Loads the last stored network_plugin_config
-        :param args:
-        :return:
-        """
-        self.network_manager_model.load_config(global_monitoring_manager.get_config_path())
-
 
 
 

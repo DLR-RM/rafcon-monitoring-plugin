@@ -1,4 +1,11 @@
-# TODO: will be replaced soon
+"""
+.. module:: client controller
+   :platform: Unix, Windows
+   :synopsis: a module holding the controller for the ClientView with the client specific functions
+
+.. moduleauthor:: Benno Voggenreiter
+
+"""
 from gtk import ListStore
 
 from monitoring.model.network_model import network_manager_model
@@ -8,12 +15,14 @@ from rafcon.mvc.controllers.utils.extended_controller import ExtendedController
 from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants
+from monitoring.controllers.abstract_endpoint_controller import AbstractController
 
 logger = log.get_logger(__name__)
 
 
 class ClientController(ExtendedController):
-    """Controller handling the client monitoring plugin
+    """
+    Controller handling the client monitoring plugin
     """
 
     def __init__(self, model, view):
@@ -27,23 +36,6 @@ class ClientController(ExtendedController):
         self.history_list_store = ListStore(str)
         self.message_list_store = ListStore(str)
         self.network_manager_model = model
-
-        self.params = {'CLIENT_UDP_PORT',
-                       'SERVER_IP',
-                       'SERVER_UDP_PORT',
-                       'SPACEBOT_CUP_MODE',
-                       'HASH_LENGTH',
-                       'SALT_LENGTH',
-                       'MAX_TIME_WAITING_FOR_ACKNOWLEDGEMENTS',
-                       'MAX_TIME_WAITING_BETWEEN_CONNECTION_TRY_OUTS',
-                       'BURST_NUMBER',
-                       'TIME_BETWEEN_BURSTS',
-                       'SERVER',
-                       'HISTORY_LENGTH',
-                       'ENABLED',
-                       'TYPE',
-                       'CLIENT_ID'
-                       }
 
     def register_view(self, view):
         """Called when the View was registered"""
@@ -60,17 +52,17 @@ class ClientController(ExtendedController):
         self.view['connect_btn1'].connect('clicked', self.on_connect_button_clicked)
         self.view['disconnect_btn1'].connect('clicked', self.on_disconnect_button_clicked)
         self.view['conf_tree_view'].set_model(self.config_list_store)
-        self.view['save_btn'].connect('clicked', self.on_save_button_clicked)
+        self.view['save_btn'].connect('clicked', AbstractController.on_save_button_clicked)
 
-        self.view['load_btn'].connect('clicked', self.on_load_button_clicked)
+        self.view['load_btn'].connect('clicked', AbstractController.on_load_button_clicked)
 
-        self.view['reload_btn'].connect('clicked', self.on_reload_button_clicked)
-        self.view['clear_btn'].connect('clicked', self.on_clear_button_clicked)
+        self.view['reload_btn'].connect('clicked', AbstractController.on_history_reload_button_clicked)
+        self.view['clear_btn'].connect('clicked', AbstractController.on_history_clear_button_clicked)
 
-        self.view['reload_btn1'].connect('clicked', self.on_message_reload_button_clicked)
-        self.view['clear_btn1'].connect('clicked', self.on_message_clear_button_clicked)
+        self.view['reload_btn1'].connect('clicked', AbstractController.on_message_reload_button_clicked)
+        self.view['clear_btn1'].connect('clicked', AbstractController.on_message_clear_button_clicked)
 
-        self.view['refresh_conf_btn'].connect('clicked', self.on_apply_button_clicked)
+        self.view['refresh_conf_btn'].connect('clicked', AbstractController.on_apply_button_clicked)
 
         # self.refresh_config()
         self.network_manager_model.set_config_value(None, None)
@@ -217,37 +209,6 @@ class ClientController(ExtendedController):
         except RuntimeError as e:
             logger.exception(e)
 
-    @staticmethod
-    def on_save_button_clicked(*args):
-        """
-        Overwrites configuration in network_monitoring_config.yaml when triggered
-        :param args:
-        :return:
-        """
-        logger.info("Saving configurations...")
-        global_network_config.save_configuration()
-
-    def on_load_button_clicked(self, *args):
-        """
-        Loads the recent network_monitoring_config.yaml when triggered
-        :param args:
-        :return:
-        """
-        self.network_manager_model.load_config(global_monitoring_manager.get_config_path())
-
-    @staticmethod
-    def on_apply_button_clicked(self, *args):
-        """
-        Reinitializes the client plugin with config.
-        :param args:
-        :return:
-        """
-        for address in self.network_manager_model.connected_ip_port:
-            global_monitoring_manager.disconnect(address)
-            self.network_manager_model.delete_connection(address)
-        logger.info("Applying configurations...")
-        global_monitoring_manager.reinitialize()
-
     @ExtendedController.observe("history_list", after=True)
     def update_history(self, model, prop_name, info):
         """
@@ -277,40 +238,3 @@ class ClientController(ExtendedController):
                 self.message_list_store.append(["Message: {0} {1} from {2}".format(key[0], key[2], key[1])])
             elif key[2] == "send":
                 self.message_list_store.append(["Message: {0} {1} to {2}".format(key[0], key[2], key[1])])
-
-    @staticmethod
-    def on_reload_button_clicked(self, *args):
-        """
-        Reloads history_list in model when triggered
-        :param args:
-        :return:
-        """
-        self.network_manager_model.reload_history()
-
-    @staticmethod
-    def on_clear_button_clicked(self, *args):
-        """
-        Clears history_list in model when triggered
-        :param args:
-        :return:
-        """
-        self.network_manager_model.clear_history()
-
-    @staticmethod
-    def on_message_reload_button_clicked(self, *args):
-        """
-        Reloads message_list in model when triggered
-        :param args:
-        :return:
-        """
-        self.network_manager_model.reload_message()
-
-    @staticmethod
-    def on_message_clear_button_clicked(self, *args):
-        """
-        Clears message_list in model when triggered
-        :param args:
-        :return:
-        """
-        self.network_manager_model.clear_message()
-

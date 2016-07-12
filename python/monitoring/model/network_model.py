@@ -1,3 +1,11 @@
+"""
+.. module:: network manager model
+   :platform: Unix, Windows
+   :synopsis: a module which manages the network monitoring
+
+.. moduleauthor:: Benno Voggenreiter
+
+"""
 from gtkmvc import ModelMT
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log
@@ -5,6 +13,9 @@ logger = log.get_logger(__name__)
 
 
 class NetworkManagerModel(ModelMT):
+    """
+    Model which manages the network monitoring
+    """
     status = []
     ping = []
     history_list = []

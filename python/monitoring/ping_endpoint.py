@@ -1,9 +1,16 @@
-#!/usr/bin/python
+"""
+.. module:: ping_endpoint
+   :platform: Unix, Windows
+   :synopsis: a module holding the function to ping connected ip
+
+.. moduleauthor:: Benno Voggenreiter
+
+"""
 import subprocess
 from monitoring.model.network_model import network_manager_model
 
 
-def pinger(address):
+def ping_endpoint(address):
     """
     A function to get the ping of the client or server address.
     Tries to ping address 5 times and sets the average time into model

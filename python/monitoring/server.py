@@ -3,7 +3,7 @@
    :platform: Unix, Windows
    :synopsis: A module to care about providing execution status to other RAFCON instances
 
-.. moduleauthor:: Sebastian Brunner
+.. moduleauthor:: Benno Voggenreiter
 
 
 """
@@ -20,7 +20,7 @@ from acknowledged_udp.udp_server import UdpServer
 
 from monitoring.model.network_model import network_manager_model
 from threading import Thread
-from monitoring.ping import pinger
+from monitoring.ping_endpoint import ping_endpoint
 
 from rafcon.utils import log
 logger = log.get_logger(__name__)
@@ -152,7 +152,7 @@ class MonitoringServer(UdpServer):
                 protocol = Protocol(MessageType.ID, global_network_config.get_config_value("SERVER_ID"))
                 self.send_message_non_acknowledged(protocol, address)
                 network_manager_model.add_to_message_list(protocol, address, "send")
-            thread = Thread(target=pinger, args=(address, ))
+            thread = Thread(target=ping_endpoint, args=(address, ))
             thread.daemon = True
             thread.start()
 
@@ -190,7 +190,7 @@ class MonitoringServer(UdpServer):
 
     def print_message(self, message, address):
         """
-        A dummy funcion to just print a message from a certain address.
+        A dummy function to just print a message from a certain address.
         :param message: the received message
         :param address: the origin of the message
         :return:
@@ -198,6 +198,11 @@ class MonitoringServer(UdpServer):
         logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
 
     def disconnect(self, address):
+        """
+        A function to disconnect client. Client will be removed from connection list
+        :param address: client address which shall be disconnected
+        :return:
+        """
         protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
         logger.info("sending protocol {0}".format(str(protocol)))
         self.send_message_non_acknowledged(protocol, address=address)
@@ -206,6 +211,11 @@ class MonitoringServer(UdpServer):
         # network_manager_model.delete_connection(address)
 
     def disable(self, address):
+        """
+        A function to dis - and enable clients.
+        :param address: client address which shall be dis- or enabled
+        :return:
+        """
         if network_manager_model.get_connected_status(address) == "disabled":
             protocol = Protocol(MessageType.DISABLE, "Enabling")
             network_manager_model.set_connected_status(address, "connected")
@@ -217,16 +227,24 @@ class MonitoringServer(UdpServer):
         logger.info("sending protocol {0}".format(str(protocol)))
         self.send_message_non_acknowledged(protocol, address=address)
 
-    def get_host(self):
-        return self.connector.getHost()
+    # def get_host(self):
+    #     return self.connector.getHost()
 
     def shutdown(self):
+        """
+        A function to log off from clients when shutting down Rafcon
+        :return:
+        """
         for address in network_manager_model.connected_ip_port:
             protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
             self.send_message_non_acknowledged(protocol, address)
             network_manager_model.add_to_message_list("Shutdown", address, "send")
 
     def cut_connection(self):
+        """
+        Called when reinitializing the connection. Cuts all communications.
+        :return:
+        """
         if self.initialized is True:
             self.connector.connectionLost(reason=None)
             self.initialized = False

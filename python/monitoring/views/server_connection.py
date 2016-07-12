@@ -1,10 +1,15 @@
-# TODO: will be replaced soon
+"""
+Server view of the monitoring plugin
+"""
 from gtkmvc import View
 from monitoring import constants
 from rafcon.mvc import gui_helper
 
 
 class ServerView(View):
+    """
+    Server view
+    """
     builder = constants.get_glade_path('server.glade')
     top = 'server_notebook'
     icons = {'connection': constants.ICON_SIGNAL,

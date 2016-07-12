@@ -81,7 +81,7 @@ def main_window_setup(main_window_controller):
 
 def pre_main_window_destruction(main_window_controller):
     """
-    Triggert when shutting down main_window_controller. Clean shutdown of the plugin
+    Triggered when shutting down main_window_controller. Clean shutdown of the plugin
     :param main_window_controller:
     :return:
     """

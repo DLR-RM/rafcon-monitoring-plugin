@@ -1,10 +1,15 @@
-
+"""
+Client view of the monitoring plugin
+"""
 from gtkmvc import View
 from monitoring import constants
 from rafcon.mvc import gui_helper
 
 
 class ClientView(View):
+    """
+    Client view
+    """
     builder = constants.get_glade_path('client.glade')
     top = 'client_notebook'
     icons = {'connection': constants.ICON_SIGNAL,

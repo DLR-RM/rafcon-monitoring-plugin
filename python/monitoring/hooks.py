@@ -13,11 +13,6 @@ from twisted.internet.error import CannotListenError
 from monitoring_manager import global_monitoring_manager
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log
-from monitoring.views.server_connection import ServerView
-from monitoring.views.client_connection import ClientView
-from monitoring.controllers.server_controller import ServerController
-from monitoring.controllers.client_controller import ClientController
-from monitoring.model.network_model import network_manager_model
 logger = log.get_logger(__name__)
 
 
@@ -65,6 +60,12 @@ def main_window_setup(main_window_controller):
     :param main_window_controller:
     :return:
     """
+    from monitoring.views.server_connection import ServerView
+    from monitoring.views.client_connection import ClientView
+    from monitoring.controllers.server_controller import ServerController
+    from monitoring.controllers.client_controller import ClientController
+    from monitoring.model.network_model import network_manager_model
+
     if global_network_config.get_config_value("SERVER"):
         main_window_controller.view.state_machine_server = ServerView()
         main_window_controller.view.state_machine_server.show()

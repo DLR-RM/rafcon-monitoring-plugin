@@ -64,6 +64,7 @@ class MonitoringClient(UdpClient):
             if not self.registered_to_server:
                 # if not self.connector_created:
                 # setup twisted
+                print "this version"
                 from twisted.internet import reactor
                 self.server_address = (global_network_config.get_config_value("SERVER_IP"),
                                        global_network_config.get_config_value("SERVER_UDP_PORT"))
@@ -96,15 +97,6 @@ class MonitoringClient(UdpClient):
                 logger.info("Already connected to server!")
         else:
             logger.info("Cannot connect to server: Client disabled!")
-
-    # def print_message(self, message, address):
-    #     """
-    #     Simply print an input message
-    #     :param message: the message to be printed
-    #     :param address: the address where the message originates
-    #     :return:
-    #     """
-    #     logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
 
     def monitoring_data_received_function(self, message, address):
         """
@@ -142,7 +134,7 @@ class MonitoringClient(UdpClient):
                     self.disabled = False
                     self.connector.stopListening()
                     self.set_on_local_control()
-                    self.avoid_timeout = False
+                    # self.avoid_timeout = False
             if message.message_type is MessageType.DISABLE:
                     logger.info("Disabled monitoring by {0}".format(global_network_config.get_config_value("SERVER_IP")))
                     network_manager_model.set_connected_status(address, "disabled")

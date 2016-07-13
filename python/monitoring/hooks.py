@@ -8,6 +8,7 @@
 
 """
 
+import sys
 from twisted.internet.error import CannotListenError
 
 from monitoring_manager import global_monitoring_manager
@@ -52,6 +53,9 @@ def post_init(setup_config):
         init_thread = threading.Thread(target=initialize_monitoring_manager)
         init_thread.daemon = True
         init_thread.start()
+
+    if not global_network_config.get_config_value("SERVER") and not 'rafcon.mvc' in sys.modules:
+        logger.error("Starting RAFCON with the monitoring plugin in client mode without GUI, does not make sense ...")
 
 
 def main_window_setup(main_window_controller):

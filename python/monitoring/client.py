@@ -239,6 +239,7 @@ class MonitoringClient(UdpClient):
         yield defer.maybeDeferred(self.disconnect, self.server_address)
         self.execution_engine_replaced = False
         self.registered_to_server = False
+        network_manager_model.delete_all()
         defer.returnValue(True)
 
     def get_host(self):

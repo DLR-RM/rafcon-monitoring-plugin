@@ -21,6 +21,7 @@ from acknowledged_udp.udp_server import UdpServer
 from monitoring.model.network_model import network_manager_model
 from threading import Thread
 from monitoring.ping_endpoint import ping_endpoint
+from twisted.internet import threads, defer
 
 from rafcon.utils import log
 logger = log.get_logger(__name__)
@@ -188,6 +189,8 @@ class MonitoringServer(UdpServer):
             network_manager_model.set_connected_status(address, "disconnected")
             network_manager_model.delete_connection(address)
 
+        logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
+
     def print_message(self, message, address):
         """
         A dummy function to just print a message from a certain address.
@@ -197,6 +200,7 @@ class MonitoringServer(UdpServer):
         """
         logger.info("Received datagram {0} from address: {1}".format(str(message), str(address)))
 
+    @defer.inlineCallbacks
     def disconnect(self, address):
         """
         A function to disconnect client. Client will be removed from connection list
@@ -205,11 +209,13 @@ class MonitoringServer(UdpServer):
         """
         protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
         logger.info("sending protocol {0}".format(str(protocol)))
-        self.send_message_non_acknowledged(protocol, address=address)
+        yield threads.deferToThread(self.send_message_acknowledged, protocol, address=address)
         network_manager_model.set_connected_status(address, "disconnected")
         network_manager_model.add_to_message_list("Disconnecting", address, "send")
-        # network_manager_model.delete_connection(address)
+        network_manager_model.delete_connection(address)
+        defer.returnValue(True)
 
+    @defer.inlineCallbacks
     def disable(self, address):
         """
         A function to dis - and enable clients.
@@ -218,17 +224,15 @@ class MonitoringServer(UdpServer):
         """
         if network_manager_model.get_connected_status(address) == "disabled":
             protocol = Protocol(MessageType.DISABLE, "Enabling")
+            # logger.info("sending protocol {0}".format(str(protocol)))
+            yield threads.deferToThread(self.send_message_acknowledged, protocol, address=address)
             network_manager_model.set_connected_status(address, "connected")
             network_manager_model.add_to_message_list("Enabling", address, "send")
         else:
             protocol = Protocol(MessageType.DISABLE, "Disabling")
+            yield threads.deferToThread(self.send_message_acknowledged, protocol, address=address)
             network_manager_model.set_connected_status(address, "disabled")
             network_manager_model.add_to_message_list("Disabling", address, "send")
-        logger.info("sending protocol {0}".format(str(protocol)))
-        self.send_message_non_acknowledged(protocol, address=address)
-
-    # def get_host(self):
-    #     return self.connector.getHost()
 
     def shutdown(self):
         """
@@ -240,11 +244,15 @@ class MonitoringServer(UdpServer):
             self.send_message_non_acknowledged(protocol, address)
             network_manager_model.add_to_message_list("Shutdown", address, "send")
 
-    def cut_connection(self):
+    @defer.inlineCallbacks
+    def cut_connection(self, addresses):
         """
         Called when reinitializing the connection. Cuts all communications.
         :return:
         """
         if self.initialized is True:
-            self.connector.connectionLost(reason=None)
+            for address in addresses:
+                yield defer.maybeDeferred(self.disconnect, address)
+            yield defer.maybeDeferred(self.connector.stopListening)
             self.initialized = False
+        defer.returnValue(True)

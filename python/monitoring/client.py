@@ -20,6 +20,7 @@ from rafcon.statemachine.enums import StateExecutionState
 import rafcon
 from monitoring.model.network_model import network_manager_model
 from rafcon.utils import log
+from twisted.internet import defer
 
 from threading import Thread
 from monitoring.ping_endpoint import ping_endpoint
@@ -41,11 +42,10 @@ class MonitoringClient(UdpClient):
         self.datagram_received_function = self.monitoring_data_received_function
         self.execution_engine_replaced = False
         self.registered_to_execution_engine = False
-        self.connector_created = False
         self.registered_to_server = False
-        self.avoid_timeout = False
         self.disabled = False
 
+    @defer.inlineCallbacks
     def connect(self):
         """
         Connect to the remote RAFCON server instance. Several things are achieved here:
@@ -56,43 +56,38 @@ class MonitoringClient(UdpClient):
         """
         # replace state machine execution engine
         if not self.execution_engine_replaced:
+            logger.info("Setting execution engine to remote...")
             engine = MonitoringExecutionEngine(state_machine_manager, self)
             self.init_execution_engine(engine)
 
         if not self.disabled:
 
             if not self.registered_to_server:
-                # if not self.connector_created:
                 # setup twisted
-                print "this version"
-                from twisted.internet import reactor
+                from twisted.internet import reactor, threads
                 self.server_address = (global_network_config.get_config_value("SERVER_IP"),
                                        global_network_config.get_config_value("SERVER_UDP_PORT"))
-                logger.info("Connect to server {0}!".format(str(self.server_address)))
+                logger.info("Connect to server {0} ...".format(str(self.server_address)))
                 self.connector = reactor.listenUDP(0, self)
-                self.connector_created = True
-                logger.info("self.connector {0}".format(str(self.connector)))
-
+                # logger.info("self.connector {0}".format(str(self.connector)))
+                logger.info("Initialized!")
                 protocol = Protocol(MessageType.REGISTER,
                                     "Registering@{0}".format(global_network_config.get_config_value("CLIENT_ID")))
-                logger.info("sending protocol {0}".format(str(protocol)))
-                if self.avoid_timeout is False:
-                    return_value = self.send_message_acknowledged(protocol, address=self.server_address, blocking=True)
-                    if return_value:
-                        self.registered_to_server = True
-                        self.avoid_timeout = True
-                        logger.info("Initialized")
-                        return True
-                    else:
-                        logger.error("Connection to server {0} timeout".format(str(self.server_address)))
-                        sleep_time = global_network_config.get_config_value("MAX_TIME_WAITING_BETWEEN_CONNECTION_TRY_OUTS")
-                        logger.info("Waiting for MAX_TIME_WAITING_BETWEEN_CONNECTION_TRY_OUTS={0} seconds!".format(str(sleep_time)))
-                        time.sleep(float(sleep_time))
-                        return False
+                # logger.info("sending protocol {0}".format(str(protocol)))
+                return_value = yield threads.deferToThread(self.send_message_acknowledged,
+                                                           protocol, address=self.server_address, blocking=True)
+                if return_value:
+                    self.registered_to_server = True
+                    logger.info("Connected!")
+                    network_manager_model.add_to_message_list('Connecting', self.server_address, "send")
+                    defer.returnValue(return_value)
                 else:
-                    self.send_message_non_acknowledged(protocol, address=self.server_address)
-
-                network_manager_model.add_to_message_list('Connecting', self.server_address, "send")
+                    logger.error("Connection to server {0} timeout".format(str(self.server_address)))
+                    sleep_time = global_network_config.get_config_value("MAX_TIME_WAITING_BETWEEN_CONNECTION_TRY_OUTS")
+                    logger.info("Waiting for MAX_TIME_WAITING_BETWEEN_CONNECTION_TRY_OUTS={0} seconds!".format(str(sleep_time)))
+                    time.sleep(float(sleep_time))
+                    self.connect()
+                    defer.returnValue(return_value)
             else:
                 logger.info("Already connected to server!")
         else:
@@ -109,7 +104,6 @@ class MonitoringClient(UdpClient):
         network_manager_model.add_to_message_list(message, address, "received")
 
         if message.message_type is MessageType.ID:
-            # if address not in network_manager_model.connected_ip_port:
             network_manager_model.set_connected_ip_port(address)
             network_manager_model.set_connected_id(address, message.message_content)
             network_manager_model.set_connected_status(address, "connected")
@@ -121,9 +115,6 @@ class MonitoringClient(UdpClient):
             if message.message_type is MessageType.STATE_ID:
                 (state_path, execution_status) = message.message_content.split("@")
                 state_execution_status = StateExecutionState(int(execution_status))
-                # logger.info("Received state_id {0}".format(str(state_path)))
-                # logger.info("Received execution_status {0} {1}".format(str(execution_status),
-                #                                                        str(state_execution_status)))
                 current_state = state_machine_manager.get_active_state_machine().get_state_by_path(state_path)
                 current_state.state_execution_status = state_execution_status
             if message.message_type is MessageType.UNREGISTER:
@@ -134,7 +125,6 @@ class MonitoringClient(UdpClient):
                     self.disabled = False
                     self.connector.stopListening()
                     self.set_on_local_control()
-                    # self.avoid_timeout = False
             if message.message_type is MessageType.DISABLE:
                     logger.info("Disabled monitoring by {0}".format(global_network_config.get_config_value("SERVER_IP")))
                     network_manager_model.set_connected_status(address, "disabled")
@@ -153,28 +143,29 @@ class MonitoringClient(UdpClient):
                 self.disabled = False
                 self.connector.stopListening()
 
+    @defer.inlineCallbacks
     def disconnect(self, address):
         """
         A function to disconnect client from server.
         :param address: client address which shall be disconnected
         :return:
         """
+        logger.info("Disconnect from server: {0} ...".format(address))
         if network_manager_model.get_connected_status(address) is not "disconnected":
             protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
-            logger.info("sending protocol {0}".format(str(protocol)))
-            self.send_message_non_acknowledged(protocol, address=address)
-            # self.stopProtocol()
-            self.connector.stopListening()
-            # self.connector.connectionLost(reason=None)
+            # logger.info("sending protocol {0}".format(str(protocol)))
+            from twisted.internet import reactor, threads
+            yield threads.deferToThread(self.send_message_acknowledged, protocol, address=address, blocking=True)
+            yield defer.maybeDeferred(self.connector.stopListening)
             self.disabled = False
-            # self.avoid_timeout = False
-            self.registered_to_server = False
             network_manager_model.set_connected_status(address, "disconnected")
-            logger.info("Disconnected from Server")
+            logger.info("Disconnected from Server!")
             network_manager_model.add_to_message_list("Disconnecting", address, 'send')
-            self.set_on_local_control()
+            yield defer.maybeDeferred(self.set_on_local_control)
+            self.registered_to_server = False
         else:
             logger.info("No Server connected")
+        defer.returnValue(True)
 
     def shutdown(self):
         """
@@ -182,8 +173,7 @@ class MonitoringClient(UdpClient):
         :return:
         """
         protocol = Protocol(MessageType.UNREGISTER, "Disconnecting")
-        ack = self.send_message_non_acknowledged(protocol, self.server_address)
-        # self.stopProtocol()
+        self.send_message_non_acknowledged(protocol, self.server_address)
 
     def set_on_local_control(self):
         """
@@ -191,20 +181,22 @@ class MonitoringClient(UdpClient):
         Triggered when disconnecting or disabling.
         :return:
         """
+        logger.info("Setting execution engine to local...")
         self.registered_to_server = False
         self.execution_engine_replaced = False
         engine = state_machine_execution_engine
         self.init_execution_engine(engine)
+        return True
 
+    @defer.inlineCallbacks
     def reconnect(self, address):
         """
         A function to reconnect the client to the server
         :param address: client address ('ip', port)
         :return:
         """
-
         self.execution_engine_replaced = False
-        self.connect()
+        yield defer.maybeDeferred(self.connect)
 
     def init_execution_engine(self, engine):
         """
@@ -212,7 +204,6 @@ class MonitoringClient(UdpClient):
         :param engine: target execution engine
         :return:
         """
-
         monitoring_execution_engine = engine
         # global replacement
         # TODO: modules that have already imported the singleton.state_machine_execution_engine
@@ -230,7 +221,7 @@ class MonitoringClient(UdpClient):
                 StateMachineExecutionEngineModel(rafcon.statemachine.singleton.state_machine_execution_engine)
             main_window_controller.switch_state_machine_execution_engine(
                 rafcon.mvc.singleton.state_machine_execution_manager_model)
-            logger.info("state machine execution engine replaced")
+            logger.info("Execution engine replaced!")
 
             # replacement for main_window_controller_only
             from rafcon.mvc.singleton import main_window_controller
@@ -238,14 +229,17 @@ class MonitoringClient(UdpClient):
                 monitoring_execution_engine
         self.execution_engine_replaced = True
 
-    def cut_connection(self):
+    @defer.inlineCallbacks
+    def cut_connection(self, addresses):
         """
-        Called when reinitializing the connection.
+        Called when reinitializing the connection. Is waiting until disconnected
+        :param:
         :return:
         """
+        yield defer.maybeDeferred(self.disconnect, self.server_address)
         self.execution_engine_replaced = False
-        # self.avoid_timeout = False
-        # self.stopProtocol()
+        self.registered_to_server = False
+        defer.returnValue(True)
 
     def get_host(self):
         """
@@ -253,6 +247,7 @@ class MonitoringClient(UdpClient):
         :return: connected hosts
         """
         return self.connector.getHost()
+
 
 
 

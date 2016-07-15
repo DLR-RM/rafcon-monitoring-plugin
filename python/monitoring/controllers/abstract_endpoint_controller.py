@@ -10,6 +10,7 @@ from monitoring.model.network_model import network_manager_model
 from monitoring.monitoring_manager import global_monitoring_manager
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log
+import time
 
 logger = log.get_logger(__name__)
 
@@ -87,14 +88,12 @@ class AbstractController():
         global_network_config.save_configuration()
 
     @staticmethod
-    def on_apply_button_clicked(self, *args):
+    def on_apply_button_clicked(*args):
         """
-        Reinitializes the client plugin with config.
+        Reinitialize the client plugin with config.
         :param args:
         :return:
         """
-        for address in network_manager_model.connected_ip_port:
-            global_monitoring_manager.disconnect(address)
-            network_manager_model.delete_connection(address)
         logger.info("Applying configurations...")
-        global_monitoring_manager.reinitialize()
+
+        global_monitoring_manager.reinitialize(network_manager_model.connected_ip_port)

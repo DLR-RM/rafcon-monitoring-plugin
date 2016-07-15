@@ -16,6 +16,9 @@ from yaml_configuration.config import config_path
 import rafcon.utils.filesystem as filesystem
 
 from rafcon.utils import log
+import time
+from twisted.internet import defer
+
 logger = log.get_logger(__name__)
 
 
@@ -58,7 +61,6 @@ class MonitoringManager():
             if not self.endpoint:
                 self.endpoint = MonitoringClient()
             self.endpoint_initialized = self.endpoint.connect()
-
         return self.endpoint_initialized
 
     @staticmethod
@@ -115,16 +117,18 @@ class MonitoringManager():
         if self.endpoint:
             self.endpoint.shutdown()
 
-    def reinitialize(self):
+    @defer.inlineCallbacks
+    def reinitialize(self, addresses):
         """
         A method to reinitialize the plugin. Called when applying changes in config
         Disconnects all connections and connects with new config
         :return:
         """
-        self.endpoint.cut_connection()
+        yield defer.maybeDeferred(self.endpoint.cut_connection, addresses)
         if self.networking_enabled():
             logger.info("Reinitializing...")
-            self.initialize(None)
+            self.endpoint = None
+            yield defer.maybeDeferred(self.initialize, None)
         else:
             logger.error("Networking disabled!")
 

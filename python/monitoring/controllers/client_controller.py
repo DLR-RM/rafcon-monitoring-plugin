@@ -16,6 +16,7 @@ from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants
 from monitoring.controllers.abstract_endpoint_controller import AbstractController
+import threading
 
 logger = log.get_logger(__name__)
 
@@ -79,9 +80,8 @@ class ClientController(ExtendedController):
         if path is not None:
             for index in path:
                 address = self.network_manager_model.connected_ip_port[index]
-                logger.info("Disconnect from server: {0}".format(address))
                 global_monitoring_manager.disconnect(address)
-                self.refresh_con()
+                # self.refresh_con()
 
     def on_connect_button_clicked(self, *args):
         """

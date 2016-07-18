@@ -3,7 +3,7 @@ Server view of the monitoring plugin
 """
 from gtkmvc import View
 from monitoring import constants
-from rafcon.mvc import gui_helper
+import gui_helper
 
 
 class ServerView(View):

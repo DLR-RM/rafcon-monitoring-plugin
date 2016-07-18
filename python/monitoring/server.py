@@ -123,7 +123,7 @@ class MonitoringServer(UdpServer):
         # if len(self.get_registered_endpoints()) == 0:
         #     logger.warn("No endpoint registered yet")
         if self.initialized:
-            for address in self.get_registered_endpoints():
+            for address in network_manager_model.connected_ip_port:  # self.get_registered_endpoints():
                 self.send_message_non_acknowledged(protocol, address)
                 network_manager_model.add_to_message_list(message, address, "send")
         else:

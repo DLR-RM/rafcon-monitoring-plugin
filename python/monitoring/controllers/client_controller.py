@@ -8,7 +8,6 @@
 """
 from gtk import ListStore
 
-from monitoring.model.network_model import network_manager_model
 from rafcon.utils import log
 from monitoring.views.client_connection import ClientView
 from rafcon.mvc.controllers.utils.extended_controller import ExtendedController
@@ -16,8 +15,6 @@ from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants
 from monitoring.controllers.abstract_endpoint_controller import AbstractController
-import threading
-
 logger = log.get_logger(__name__)
 
 
@@ -29,7 +26,7 @@ class ClientController(ExtendedController):
     def __init__(self, model, view):
         assert isinstance(view, ClientView)
         ExtendedController.__init__(self, model, view)
-        self.connection_list_store = ListStore(str, str, int, str)
+        self.connection_list_store = ListStore(str, str, str, str)
         self.global_network_config = global_network_config
         self.config_list_store = ListStore(str, str)
         self._actual_entry = None
@@ -124,26 +121,29 @@ class ClientController(ExtendedController):
         """
         path = self.view["connection_tree_view1"].get_cursor()[0]
         self.connection_list_store.clear()
-        for address in self.network_manager_model.connected_ip_port:
-            ip = address[0]
-            port = address[1]
-            ident = self.network_manager_model.get_connected_id(address)
-            ping = self.network_manager_model.get_connected_ping(address)
-            status = self.network_manager_model.get_connected_status(address)
-            if status == "connected":
-                self.connection_list_store.append([ip, ident, port,
-                                                   constants.set_icon_and_text(constants.ICON_NET, status,
-                                                                               'fgcolor="#07F743"', ping)])
-            elif status == "disconnected":
-                self.connection_list_store.append([ip, ident, port,
-                                                   constants.set_icon_and_text(constants.ICON_DISCONNECTED, status,
-                                                                               'fgcolor="#e95815"', ping)])
-            else:
-                self.connection_list_store.append([ip, ident, port,
-                                                   constants.set_icon_and_text(constants.ICON_DISABLED, status,
-                                                                               'fgcolor="#d98508"', ping)])
-            if path is not None:
-                self.view["connection_tree_view1"].set_cursor(path)
+        if len(self.network_manager_model.connected_ip_port) < 1:
+            self.connection_list_store.append([None, "connecting...", None, None])
+        else:
+            for address in self.network_manager_model.connected_ip_port:
+                ip = address[0]
+                port = address[1]
+                ident = self.network_manager_model.get_connected_id(address)
+                ping = self.network_manager_model.get_connected_ping(address)
+                status = self.network_manager_model.get_connected_status(address)
+                if status == "connected":
+                    self.connection_list_store.append([ip, ident, port,
+                                                       constants.set_icon_and_text(constants.ICON_NET, status,
+                                                                                   'fgcolor="#07F743"', ping)])
+                elif status == "disconnected":
+                    self.connection_list_store.append([ip, ident, port,
+                                                       constants.set_icon_and_text(constants.ICON_DISCONNECTED, status,
+                                                                                   'fgcolor="#e95815"', ping)])
+                else:
+                    self.connection_list_store.append([ip, ident, port,
+                                                       constants.set_icon_and_text(constants.ICON_DISABLED, status,
+                                                                                   'fgcolor="#d98508"', ping)])
+                if path is not None:
+                    self.view["connection_tree_view1"].set_cursor(path)
 
     @ExtendedController.observe("config_list", after=True)
     def refresh_config(self, model, prop_name, info):

@@ -70,7 +70,6 @@ class MonitoringClient(UdpClient):
                 logger.info("Connect to server {0} ...".format(str(self.server_address)))
                 self.connector = reactor.listenUDP(0, self)
                 # logger.info("self.connector {0}".format(str(self.connector)))
-                logger.info("Initialized!")
                 protocol = Protocol(MessageType.REGISTER,
                                     "Registering@{0}".format(global_network_config.get_config_value("CLIENT_ID")))
                 # logger.info("sending protocol {0}".format(str(protocol)))

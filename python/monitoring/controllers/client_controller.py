@@ -16,7 +16,6 @@ from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants
 from monitoring.controllers.abstract_endpoint_controller import AbstractController
-from monitoring.views import gui_helper
 import threading
 
 logger = log.get_logger(__name__)
@@ -133,16 +132,16 @@ class ClientController(ExtendedController):
             status = self.network_manager_model.get_connected_status(address)
             if status == "connected":
                 self.connection_list_store.append([ip, ident, port,
-                                                   gui_helper.set_icon_and_text(constants.ICON_NET, status,
-                                                                                'fgcolor="#07F743"', ping)])
+                                                   constants.set_icon_and_text(constants.ICON_NET, status,
+                                                                               'fgcolor="#07F743"', ping)])
             elif status == "disconnected":
                 self.connection_list_store.append([ip, ident, port,
-                                                   gui_helper.set_icon_and_text(constants.ICON_DISCONNECTED, status,
-                                                                                'fgcolor="#e95815"', ping)])
+                                                   constants.set_icon_and_text(constants.ICON_DISCONNECTED, status,
+                                                                               'fgcolor="#e95815"', ping)])
             else:
                 self.connection_list_store.append([ip, ident, port,
-                                                   gui_helper.set_icon_and_text(constants.ICON_DISABLED, status,
-                                                                                'fgcolor="#d98508"', ping)])
+                                                   constants.set_icon_and_text(constants.ICON_DISABLED, status,
+                                                                               'fgcolor="#d98508"', ping)])
             if path is not None:
                 self.view["connection_tree_view1"].set_cursor(path)
 

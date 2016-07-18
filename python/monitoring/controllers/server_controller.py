@@ -16,7 +16,6 @@ from rafcon.mvc.controllers.utils.extended_controller import ExtendedController
 from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants
-from monitoring.views import gui_helper
 from monitoring.controllers.abstract_endpoint_controller import AbstractController
 
 logger = log.get_logger(__name__)
@@ -119,11 +118,11 @@ class ServerController(ExtendedController):
             status = self.network_manager_model.get_connected_status(address)
             if status == "connected":
                 self.connection_list_store.append([address[0], ident, address[1],
-                                                   gui_helper.set_icon_and_text(constants.ICON_NET, status,
+                                                   constants.set_icon_and_text(constants.ICON_NET, status,
                                                                                'fgcolor="#07F743"', ping)])
             else:
                 self.connection_list_store.append([address[0], ident, address[1],
-                                                   gui_helper.set_icon_and_text(constants.ICON_DISABLED, status,
+                                                   constants.set_icon_and_text(constants.ICON_DISABLED, status,
                                                                                'fgcolor="#d98508"', ping)])
         if path is not None:
             self.view["connection_tree_view1"].set_cursor(path)
@@ -146,14 +145,14 @@ class ServerController(ExtendedController):
                     ping = self.network_manager_model.get_connected_ping(address)
                     if status == "connected":
                         self.connection_list_store.set_value(iterator, 3,
-                                                             gui_helper.set_icon_and_text(constants.ICON_NET,
-                                                                                           status, 'fgcolor="#07F743"',
-                                                                                           ping))
+                                                             constants.set_icon_and_text(constants.ICON_NET,
+                                                                                         status, 'fgcolor="#07F743"',
+                                                                                         ping))
                     else:
                         self.connection_list_store.set_value(iterator, 3,
-                                                             gui_helper.set_icon_and_text(constants.ICON_NET,
-                                                                                          status, 'fgcolor="#d98508"',
-                                                                                          ping))
+                                                             constants.set_icon_and_text(constants.ICON_NET,
+                                                                                         status, 'fgcolor="#d98508"',
+                                                                                         ping))
                 iterator = self.connection_list_store.iter_next(iterator)
 
     @ExtendedController.observe("config_list", after=True)

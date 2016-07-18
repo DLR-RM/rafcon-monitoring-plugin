@@ -42,12 +42,10 @@
                             <property name="can_focus">True</property>
                             <property name="model">connection_liststore</property>
                             <property name="headers_clickable">False</property>
-                            <property name="enable_grid_lines">both</property>
                             <child>
                               <object class="GtkTreeViewColumn" id="server_col1">
                                 <property name="title">Server ID:</property>
                                 <property name="expand">True</property>
-                                <property name="sort_column_id">1</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="server_text"/>
                                   <attributes>
@@ -61,7 +59,6 @@
                                 <property name="resizable">True</property>
                                 <property name="title">Server IP:</property>
                                 <property name="expand">True</property>
-                                <property name="sort_column_id">0</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="con_text"/>
                                   <attributes>
@@ -75,7 +72,6 @@
                                 <property name="resizable">True</property>
                                 <property name="title">Port:</property>
                                 <property name="expand">True</property>
-                                <property name="sort_column_id">2</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="port_text"/>
                                   <attributes>
@@ -89,7 +85,6 @@
                                 <property name="resizable">True</property>
                                 <property name="title">Ping:</property>
                                 <property name="expand">True</property>
-                                <property name="sort_column_id">4</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="ping_text"/>
                                   <attributes>
@@ -341,7 +336,6 @@
                             <property name="can_focus">True</property>
                             <property name="model">connection_liststore</property>
                             <property name="headers_clickable">False</property>
-                            <property name="enable_grid_lines">both</property>
                             <child>
                               <object class="GtkTreeViewColumn" id="history_col">
                                 <property name="resizable">True</property>
@@ -455,7 +449,6 @@
                             <property name="can_focus">True</property>
                             <property name="model">message_liststore</property>
                             <property name="headers_clickable">False</property>
-                            <property name="enable_grid_lines">both</property>
                             <child>
                               <object class="GtkTreeViewColumn" id="message_col1">
                                 <property name="resizable">True</property>

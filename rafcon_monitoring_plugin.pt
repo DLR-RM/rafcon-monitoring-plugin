@@ -2,7 +2,7 @@ PTVERSION           = 2
 NAME                = rafcon_monitoring_plugin
 MAINTAINER          = Sebastian Brunner <sebastian.brunner@dlr.de>
 DESCRIPTION         = This rafcon plugin enables monitoring rafcon instances via unsecure UDP/IP
-VERSION             = 0.0.9
+VERSION             = 0.0.10
 DOCUMENTATION       = http://www.google.de
 SUPPORTED_LANGUAGES = python
 # should it also depend from rafcon??

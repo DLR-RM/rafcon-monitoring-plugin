@@ -69,16 +69,23 @@ def main_window_setup(main_window_controller):
     from monitoring.controllers.server_controller import ServerController
     from monitoring.controllers.client_controller import ClientController
     from monitoring.model.network_model import network_manager_model
+    from rafcon.mvc import gui_helper
+    import constants
+
+    icon = {"network": constants.ICON_NET}
+    monitoring_plugin_eventbox = gui_helper.create_tab_header_label("network", icon)
 
     if global_network_config.get_config_value("SERVER"):
         main_window_controller.view.state_machine_server = ServerView()
         main_window_controller.view.state_machine_server.show()
-        main_window_controller.view['network_alignment'].add(main_window_controller.view.state_machine_server.get_top_widget())
+        main_window_controller.view['lower_notebook'].append_page(main_window_controller.view.state_machine_server.get_top_widget(),
+                                                                  monitoring_plugin_eventbox)
         monitoring_manager_ctrl = ServerController(network_manager_model, main_window_controller.view.state_machine_server)
     else:
         main_window_controller.view.state_machine_client = ClientView()
         main_window_controller.view.state_machine_client.show()
-        main_window_controller.view['network_alignment'].add(main_window_controller.view.state_machine_client.get_top_widget())
+        main_window_controller.view['lower_notebook'].append_page(main_window_controller.view.state_machine_client.get_top_widget(),
+                                                                  monitoring_plugin_eventbox)
         monitoring_manager_ctrl = ClientController(network_manager_model, main_window_controller.view.state_machine_client)
     main_window_controller.add_controller('monitoring_manager_ctrl', monitoring_manager_ctrl)
 

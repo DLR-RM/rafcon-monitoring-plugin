@@ -11,7 +11,7 @@ class ServerView(View):
     Server view
     """
     builder = constants.get_glade_path('server.glade')
-    top = 'server_notebook'
+    top = 'network_scrolled_window'
     icons = {'connection': constants.ICON_SIGNAL,
              'config':     constants.ICON_CONFIG,
              'history':     constants.ICON_NET_HISTORY,

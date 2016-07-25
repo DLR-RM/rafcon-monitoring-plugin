@@ -11,7 +11,7 @@ class ClientView(View):
     Client view
     """
     builder = constants.get_glade_path('client.glade')
-    top = 'client_notebook'
+    top = 'network_scrolled_window'
     icons = {'connection': constants.ICON_SIGNAL,
              'config':     constants.ICON_CONFIG,
              'net_history':   constants.ICON_NET_HISTORY,

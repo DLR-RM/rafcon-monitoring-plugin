@@ -90,10 +90,10 @@ def main_window_setup(main_window_controller):
     main_window_controller.add_controller('monitoring_manager_ctrl', monitoring_manager_ctrl)
 
 
-def pre_main_window_destruction(main_window_controller):
+def pre_destruction():
     """
     Triggered when shutting down main_window_controller. Clean shutdown of the plugin
-    :param main_window_controller:
+    :param:
     :return:
     """
     global_monitoring_manager.shutdown()

@@ -128,6 +128,7 @@ class MonitoringManager():
         if self.networking_enabled():
             logger.info("Reinitializing...")
             self.endpoint = None
+            self.endpoint_initialized = False
             yield defer.maybeDeferred(self.initialize, None)
         else:
             logger.error("Networking disabled!")

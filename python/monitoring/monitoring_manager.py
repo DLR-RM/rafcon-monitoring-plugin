@@ -10,7 +10,7 @@
 from client import MonitoringClient
 from server import MonitoringServer
 from acknowledged_udp.config import global_network_config
-from rafcon.statemachine.singleton import argument_parser
+from rafcon.core.singleton import argument_parser
 
 from yaml_configuration.config import config_path
 import rafcon.utils.filesystem as filesystem

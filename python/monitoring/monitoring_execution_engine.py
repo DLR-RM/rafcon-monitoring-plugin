@@ -8,8 +8,8 @@
 
 """
 
-from rafcon.statemachine.execution.state_machine_execution_engine import StateMachineExecutionEngine
-from rafcon.statemachine.enums import StateMachineExecutionStatus
+from rafcon.core.execution.execution_engine import ExecutionEngine
+from rafcon.core.execution.execution_status import StateMachineExecutionStatus
 from monitoring.model.network_model import network_manager_model
 from acknowledged_udp.protocol import Protocol, MessageType
 
@@ -18,7 +18,7 @@ from rafcon.utils import log
 logger = log.get_logger(__name__)
 
 
-class MonitoringExecutionEngine(StateMachineExecutionEngine):
+class MonitoringExecutionEngine(ExecutionEngine):
     """
     This class inherits from the StatemachineExecutionEngine and thus can replace it. It is used by a monitoring
      client and overwrites common execution functions. The functionality of the functions to control
@@ -26,7 +26,7 @@ class MonitoringExecutionEngine(StateMachineExecutionEngine):
     """
 
     def __init__(self, sm_manager, communication_endpoint):
-        StateMachineExecutionEngine.__init__(self, sm_manager)
+        ExecutionEngine.__init__(self, sm_manager)
         self.communication_endpoint = communication_endpoint
 
     # overwrite all execution functions

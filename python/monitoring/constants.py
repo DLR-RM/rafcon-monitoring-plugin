@@ -7,8 +7,8 @@ def get_glade_path(glade_file):
     """
 
     from os import path
-    mvc_dir = path.dirname(__file__)
-    return path.join(mvc_dir, "glade", glade_file)
+    gui_dir = path.dirname(__file__)
+    return path.join(gui_dir, "glade", glade_file)
 
 
 def set_icon_and_text(icon, text, color, ping):

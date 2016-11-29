@@ -8,11 +8,11 @@
 
 """
 
-from rafcon.statemachine.states.container_state import ContainerState
-from rafcon.statemachine.states.library_state import LibraryState
-from rafcon.statemachine.states.state import State
-from rafcon.statemachine.singleton import state_machine_manager, state_machine_execution_engine
-from rafcon.statemachine.enums import StateMachineExecutionStatus
+from rafcon.core.states.container_state import ContainerState
+from rafcon.core.states.library_state import LibraryState
+from rafcon.core.states.state import State
+from rafcon.core.singleton import state_machine_manager, state_machine_execution_engine
+from rafcon.core.execution.execution_status import StateMachineExecutionStatus
 
 from acknowledged_udp.config import global_network_config
 from acknowledged_udp.protocol import Protocol, MessageType, STATE_EXECUTION_STATUS_SEPARATOR

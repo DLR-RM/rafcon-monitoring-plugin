@@ -15,8 +15,8 @@ from monitoring_execution_engine import MonitoringExecutionEngine
 from acknowledged_udp.udp_client import UdpClient
 from acknowledged_udp.protocol import Protocol, MessageType
 from acknowledged_udp.config import global_network_config
-from rafcon.statemachine.singleton import state_machine_manager, state_machine_execution_engine
-from rafcon.statemachine.enums import StateExecutionState
+from rafcon.core.singleton import state_machine_manager, state_machine_execution_engine
+from rafcon.core.states.state import StateExecutionStatus
 import rafcon
 from monitoring.model.network_model import network_manager_model
 from rafcon.utils import log
@@ -113,7 +113,7 @@ class MonitoringClient(UdpClient):
         if not self.disabled:
             if message.message_type is MessageType.STATE_ID:
                 (state_path, execution_status) = message.message_content.split("@")
-                state_execution_status = StateExecutionState(int(execution_status))
+                state_execution_status = StateExecutionStatus(int(execution_status))
                 current_state = state_machine_manager.get_active_state_machine().get_state_by_path(state_path)
                 current_state.state_execution_status = state_execution_status
             if message.message_type is MessageType.UNREGISTER:
@@ -176,7 +176,7 @@ class MonitoringClient(UdpClient):
 
     def set_on_local_control(self):
         """
-        A function to replace the monitoring_execution_engine by the state_machine_execution_engine.
+        A function to replace the monitoring_execution_engine by the execution_engine.
         Triggered when disconnecting or disabling.
         :return:
         """
@@ -207,23 +207,23 @@ class MonitoringClient(UdpClient):
         # global replacement
         # TODO: modules that have already imported the singleton.state_machine_execution_engine
         # still have their old reference!!!
-        rafcon.statemachine.singleton.state_machine_execution_engine = monitoring_execution_engine
+        rafcon.core.singleton.state_machine_execution_engine = monitoring_execution_engine
 
-        if 'rafcon.mvc' in sys.modules:
-            from rafcon.mvc.singleton import main_window_controller
+        if 'rafcon.gui' in sys.modules:
+            from rafcon.gui.singleton import main_window_controller
             # wait until the main window controller registered its view
             while not main_window_controller.get_controller("menu_bar_controller").registered_view:
                 time.sleep(0.1)
 
-            from rafcon.mvc.models.state_machine_execution_engine import StateMachineExecutionEngineModel
-            rafcon.mvc.singleton.state_machine_execution_manager_model = \
-                StateMachineExecutionEngineModel(rafcon.statemachine.singleton.state_machine_execution_engine)
+            from rafcon.gui.models.state_machine_execution_engine import StateMachineExecutionEngineModel
+            rafcon.gui.singleton.state_machine_execution_manager_model = \
+                StateMachineExecutionEngineModel(rafcon.core.singleton.state_machine_execution_engine)
             main_window_controller.switch_state_machine_execution_engine(
-                rafcon.mvc.singleton.state_machine_execution_manager_model)
+                rafcon.gui.singleton.state_machine_execution_manager_model)
             logger.info("Execution engine replaced!")
 
             # replacement for main_window_controller_only
-            from rafcon.mvc.singleton import main_window_controller
+            from rafcon.gui.singleton import main_window_controller
             main_window_controller.get_controller("menu_bar_controller").state_machine_execution_engine = \
                 monitoring_execution_engine
         self.execution_engine_replaced = True

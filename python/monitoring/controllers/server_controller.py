@@ -12,7 +12,7 @@ from gtk import ListStore, TreeIter
 from monitoring.model.network_model import network_manager_model
 from rafcon.utils import log
 from monitoring.views.server_connection import ServerView
-from rafcon.mvc.controllers.utils.extended_controller import ExtendedController
+from rafcon.gui.controllers.utils.extended_controller import ExtendedController
 from acknowledged_udp.config import global_network_config
 from monitoring.monitoring_manager import global_monitoring_manager
 from monitoring import constants

@@ -54,13 +54,13 @@ def post_init(setup_config):
         init_thread.daemon = True
         init_thread.start()
 
-    if not global_network_config.get_config_value("SERVER") and not 'rafcon.mvc' in sys.modules:
+    if not global_network_config.get_config_value("SERVER") and not 'rafcon.gui' in sys.modules:
         logger.error("Starting RAFCON with the monitoring plugin in client mode without GUI, does not make sense ...")
 
 
 def main_window_setup(main_window_controller):
     """
-    Launches mvc of monitoring plugin. Called in controllers/main_window.py
+    Launches the model-view-controller of monitoring plugin. Called in controllers/main_window.py
     :param main_window_controller:
     :return:
     """
@@ -69,7 +69,7 @@ def main_window_setup(main_window_controller):
     from monitoring.controllers.server_controller import ServerController
     from monitoring.controllers.client_controller import ClientController
     from monitoring.model.network_model import network_manager_model
-    from rafcon.mvc import gui_helper
+    from rafcon.gui import gui_helper
     import constants
 
     icon = {"network": constants.ICON_NET}

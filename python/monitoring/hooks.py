@@ -69,11 +69,11 @@ def main_window_setup(main_window_controller):
     from monitoring.controllers.server_controller import ServerController
     from monitoring.controllers.client_controller import ClientController
     from monitoring.model.network_model import network_manager_model
-    from rafcon.gui import gui_helper
+    from rafcon.gui.helpers.label import create_tab_header_label
     import constants
 
     icon = {"network": constants.ICON_NET}
-    monitoring_plugin_eventbox = gui_helper.create_tab_header_label("network", icon)
+    monitoring_plugin_eventbox = create_tab_header_label("network", icon)
 
     if global_network_config.get_config_value("SERVER"):
         main_window_controller.view.state_machine_server = ServerView()

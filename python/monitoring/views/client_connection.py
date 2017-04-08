@@ -3,7 +3,7 @@ Client view of the monitoring plugin
 """
 from gtkmvc import View
 from monitoring import constants
-from rafcon.gui import gui_helper
+from rafcon.gui.helpers.label import create_button_label, create_tab_header_label
 
 
 class ClientView(View):
@@ -26,10 +26,10 @@ class ClientView(View):
             child = self.notebook.get_nth_page(i)
             tab_label = self.notebook.get_tab_label(child)
             tab_label_text = tab_label.get_text()
-            self.notebook.set_tab_label(child, gui_helper.create_tab_header_label(tab_label_text, self.icons))
+            self.notebook.set_tab_label(child, create_tab_header_label(tab_label_text, self.icons))
 
         self.refresh_btn = self['refresh_conf_btn']
-        self.refresh_btn.set_image(gui_helper.create_button_label(constants.BUTTON_REFR))
+        self.refresh_btn.set_image(create_button_label(constants.BUTTON_REFR))
 
 
 

@@ -76,7 +76,7 @@ class MonitoringExecutionEngine(ExecutionEngine):
         self.send_current_execution_mode()
 
     def run_to_selected_state(self, path):
-        logger.info("Run to selected stat on remote server ...")
+        logger.info("Run to selected state on remote server ...")
         self.run_to_states = []
         self.run_to_states.append(path)
         self.set_execution_mode(StateMachineExecutionStatus.RUN_TO_SELECTED_STATE)

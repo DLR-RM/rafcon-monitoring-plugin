@@ -37,8 +37,7 @@ class NetworkManagerModel(ModelMT):
         self.config_list = config_list
         self.register_observer(self)
 
-        self.params = {'CLIENT_UDP_PORT',
-                       'SERVER_IP',
+        self.params = {'SERVER_IP',
                        'SERVER_UDP_PORT',
                        'SPACEBOT_CUP_MODE',
                        'HASH_LENGTH',

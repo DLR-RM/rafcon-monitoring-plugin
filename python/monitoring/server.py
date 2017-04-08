@@ -1,12 +1,3 @@
-"""
-.. module:: monitoring server
-   :platform: Unix, Windows
-   :synopsis: A module to care about providing execution status to other RAFCON instances
-
-.. moduleauthor:: Benno Voggenreiter
-
-
-"""
 
 from rafcon.core.states.container_state import ContainerState
 from rafcon.core.states.library_state import LibraryState

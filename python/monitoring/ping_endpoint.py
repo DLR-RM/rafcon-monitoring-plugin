@@ -1,11 +1,4 @@
-"""
-.. module:: ping_endpoint
-   :platform: Unix, Windows
-   :synopsis: a module holding the function to ping connected ip
 
-.. moduleauthor:: Benno Voggenreiter
-
-"""
 import subprocess
 from monitoring.model.network_model import network_manager_model
 

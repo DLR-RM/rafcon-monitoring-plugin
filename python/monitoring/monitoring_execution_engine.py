@@ -1,12 +1,3 @@
-"""
-.. module:: monitoring execution engine
-   :platform: Unix, Windows
-   :synopsis: A module for a special execution engine for a RAFCON monitoring client
-
-.. moduleauthor:: Sebastian Brunner
-
-
-"""
 
 from rafcon.core.execution.execution_engine import ExecutionEngine
 from rafcon.core.execution.execution_status import StateMachineExecutionStatus

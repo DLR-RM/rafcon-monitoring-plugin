@@ -1,12 +1,4 @@
-"""
-.. module:: monitoring manager
-   :platform: Unix, Windows
-   :synopsis: A module to hold all execution monitoring functionality
 
-.. moduleauthor:: Benno Voggenreiter
-
-
-"""
 from client import MonitoringClient
 from server import MonitoringServer
 from acknowledged_udp.config import global_network_config

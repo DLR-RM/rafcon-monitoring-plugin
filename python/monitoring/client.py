@@ -1,14 +1,3 @@
-"""
-.. module:: monitoring client
-   :platform: Unix, Windows
-   :synopsis: A module to care about receiving execution status from another RAFCON instance and showing it in its own
-            RAFCON instance
-
-.. moduleauthor:: Benno Voggenreiter
-
-
-"""
-
 import time
 import sys
 from monitoring_execution_engine import MonitoringExecutionEngine

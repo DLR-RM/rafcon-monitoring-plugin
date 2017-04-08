@@ -1,12 +1,3 @@
-"""
-.. module:: hooks
-   :platform: Unix, Windows
-   :synopsis: This is the hook module for the monitoring plugin.
-
-.. moduleauthor:: Sebastian Brunner
-
-
-"""
 
 import sys
 from twisted.internet.error import CannotListenError

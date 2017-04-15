@@ -1,11 +1,3 @@
-"""
-.. module:: network manager model
-   :platform: Unix, Windows
-   :synopsis: a module which manages the network monitoring
-
-.. moduleauthor:: Benno Voggenreiter
-
-"""
 from gtkmvc import ModelMT
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log

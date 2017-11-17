@@ -14,7 +14,7 @@ from twisted.internet import defer
 logger = log.get_logger(__name__)
 
 
-class MonitoringManager():
+class MonitoringManager:
     """
     This class holds all monitoring relevant objects. It is configured via a config via given on startup or loaded
     from the default RAFCON config location.
@@ -22,13 +22,13 @@ class MonitoringManager():
 
     def __init__(self):
 
-        home_path = filesystem.get_home_path()
+        default_config_path = filesystem.get_default_config_path()
 
         argument_parser.add_argument(
             '-nc', '--net_config', action='store', type=config_path, metavar='path', dest='net_config_path',
-            default=home_path, nargs='?', const=home_path,
+            default=default_config_path, nargs='?', const=default_config_path,
             help="path to the configuration file net_config.yaml. Use 'None' to prevent the generation of "
-                 "a config file and use the default configuration. Default: {0}".format(home_path))
+                 "a config file and use the default configuration. Default: {0}".format(default_config_path))
 
         self.endpoint = None
         self.endpoint_initialized = False

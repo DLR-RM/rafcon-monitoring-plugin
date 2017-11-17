@@ -88,5 +88,3 @@ def pre_destruction():
     :return:
     """
     global_monitoring_manager.shutdown()
-
-

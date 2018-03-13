@@ -1,0 +1,12 @@
+arch:
+  - 'osl42-x86_64'
+
+doc:
+  - echo "No documentation to build"
+
+doc_dir: ''
+
+test:
+  - pytest /volume/software/common/packages/rafcon/latest/tests/network/test_single_client.py
+  - pytest /volume/software/common/packages/rafcon/0.12.6/tests/network/test_multi_clients.py
+  

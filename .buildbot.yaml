@@ -7,6 +7,7 @@ doc:
 doc_dir: ''
 
 test:
+  - export PATH=$PATH:/volume/software/common/packages/rmpm/2.3.40/bin/osl42-x86_64
   - eval `rmpm_do env --env-format embed_sh rafcon`
   - export PYTHONPATH=$PYTHONPATH:/volume/software/common/packages/rafcon/latest/tests
   - pytest /volume/software/common/packages/rafcon/latest/tests/network/test_single_client.py

@@ -41,7 +41,8 @@ class MonitoringExecutionEngine(ExecutionEngine):
         logger.info("Stopping state machine on remote server ...")
         self.send_current_execution_mode()
 
-    def step_mode(self):
+    def step_mode(self, state_machine_id=None):
+        # selecting another state_machine is not supported yet!
         self.set_execution_mode(StateMachineExecutionStatus.FORWARD_INTO)
         logger.info("Step mode activated on remote server ...")
         self.send_current_execution_mode()

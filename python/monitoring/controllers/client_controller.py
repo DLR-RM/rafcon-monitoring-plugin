@@ -131,15 +131,15 @@ class ClientController(ExtendedController):
                 ping = self.network_manager_model.get_connected_ping(address)
                 status = self.network_manager_model.get_connected_status(address)
                 if status == "connected":
-                    self.connection_list_store.append([ip, ident, port,
+                    self.connection_list_store.append([str(ip), str(ident), str(port),
                                                        constants.set_icon_and_text(constants.ICON_NET, status,
                                                                                    'fgcolor="#07F743"', ping)])
                 elif status == "disconnected":
-                    self.connection_list_store.append([ip, ident, port,
+                    self.connection_list_store.append([str(ip), str(ident), str(port),
                                                        constants.set_icon_and_text(constants.ICON_DISCONNECTED, status,
                                                                                    'fgcolor="#e95815"', ping)])
                 else:
-                    self.connection_list_store.append([ip, ident, port,
+                    self.connection_list_store.append([str(ip), str(ident), str(port),
                                                        constants.set_icon_and_text(constants.ICON_DISABLED, status,
                                                                                    'fgcolor="#d98508"', ping)])
                 if path is not None:

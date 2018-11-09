@@ -1,3 +1,5 @@
+import gi
+gi.require_version('Gtk', '3.0')
 from gtkmvc3.model_mt import ModelMT
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log

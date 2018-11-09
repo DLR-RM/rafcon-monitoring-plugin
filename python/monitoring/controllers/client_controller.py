@@ -6,7 +6,7 @@
 .. moduleauthor:: Benno Voggenreiter
 
 """
-from gtk import ListStore
+from gi.repository import Gtk
 
 from rafcon.utils import log
 from monitoring.views.client_connection import ClientView
@@ -26,13 +26,13 @@ class ClientController(ExtendedController):
     def __init__(self, model, view):
         assert isinstance(view, ClientView)
         ExtendedController.__init__(self, model, view)
-        self.connection_list_store = ListStore(str, str, str, str)
+        self.connection_list_store = Gtk.ListStore(str, str, str, str)
         self.global_network_config = global_network_config
-        self.config_list_store = ListStore(str, str)
+        self.config_list_store = Gtk.ListStore(str, str)
         self._actual_entry = None
         self.list = []
-        self.history_list_store = ListStore(str)
-        self.message_list_store = ListStore(str)
+        self.history_list_store = Gtk.ListStore(str)
+        self.message_list_store = Gtk.ListStore(str)
         self.network_manager_model = model
 
     def register_view(self, view):

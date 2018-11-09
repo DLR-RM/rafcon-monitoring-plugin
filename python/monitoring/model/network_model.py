@@ -256,7 +256,7 @@ class NetworkManagerModel(ModelMT):
         if not self.config_list:
             for key in self.params:
                 if global_network_config.get_config_value(key):
-                    self.config_list.append((key, global_network_config.get_config_value(key)))
+                    self.config_list.append((key, str(global_network_config.get_config_value(key))))
         else:
             for key in self.config_list:
                 if param == key[0]:

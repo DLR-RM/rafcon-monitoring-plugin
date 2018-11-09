@@ -7,7 +7,7 @@
 
 """
 
-from gtk import ListStore, TreeIter
+from gi.repository import Gtk
 
 from monitoring.model.network_model import network_manager_model
 from rafcon.utils import log
@@ -30,12 +30,12 @@ class ServerController(ExtendedController):
         # assert isinstance(model, StateMachineManagerModel)
         assert isinstance(view, ServerView)
         ExtendedController.__init__(self, model, view)
-        self.connection_list_store = ListStore(str, str, int, str)
+        self.connection_list_store = Gtk.ListStore(str, str, int, str)
         self.global_network_config = global_network_config
-        self.config_list_store = ListStore(str, str)
+        self.config_list_store = Gtk.ListStore(str, str)
         self._actual_entry = None
-        self.history_list_store = ListStore(str)
-        self.message_list_store = ListStore(str)
+        self.history_list_store = Gtk.ListStore(str)
+        self.message_list_store = Gtk.ListStore(str)
         self.network_manager_model = model
 
     def register_view(self, view):

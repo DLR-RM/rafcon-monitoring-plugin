@@ -1,4 +1,6 @@
-from gtkmvc import ModelMT
+import gi
+gi.require_version('Gtk', '3.0')
+from gtkmvc3.model_mt import ModelMT
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log
 logger = log.get_logger(__name__)
@@ -256,7 +258,7 @@ class NetworkManagerModel(ModelMT):
         if not self.config_list:
             for key in self.params:
                 if global_network_config.get_config_value(key):
-                    self.config_list.append((key, global_network_config.get_config_value(key)))
+                    self.config_list.append((key, str(global_network_config.get_config_value(key))))
         else:
             for key in self.config_list:
                 if param == key[0]:

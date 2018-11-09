@@ -1,7 +1,7 @@
 """
 Server view of the monitoring plugin
 """
-from gtkmvc import View
+from gtkmvc3.view import View
 from monitoring import constants
 from rafcon.gui.helpers.label import create_tab_header_label, create_button_label
 

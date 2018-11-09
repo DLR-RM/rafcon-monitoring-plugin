@@ -1,4 +1,4 @@
-from gtkmvc import ModelMT
+from gtkmvc3.model_mt import ModelMT
 from acknowledged_udp.config import global_network_config
 from rafcon.utils import log
 logger = log.get_logger(__name__)

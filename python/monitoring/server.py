@@ -153,14 +153,17 @@ class MonitoringServer(UdpServer):
 
             execution_mode = StateMachineExecutionStatus(int(received_command[0]))
 
+            # currently the monitoring plugin cannot select the target state machine
+            sm_key, sm = state_machine_manager.state_machines.items()[0]
+
             if execution_mode is StateMachineExecutionStatus.STARTED:
                 # as there is no dedicated RUN_TO_STATE execution status the message has to be checked for an optional
                 # start state path
                 if len(received_command) == 2:
                     print "start state machine from state " + received_command[1]
-                    state_machine_execution_engine.start(start_state_path=received_command[1])
+                    state_machine_execution_engine.start(sm.state_machine_id, start_state_path=received_command[1])
                 else:
-                    state_machine_execution_engine.start()
+                    state_machine_execution_engine.start(sm.state_machine_id)
             elif execution_mode is StateMachineExecutionStatus.STOPPED:
                 state_machine_execution_engine.stop()
             elif execution_mode is StateMachineExecutionStatus.PAUSED:
@@ -174,7 +177,8 @@ class MonitoringServer(UdpServer):
             elif execution_mode is StateMachineExecutionStatus.BACKWARD:
                 state_machine_execution_engine.backward_step()
             elif execution_mode is StateMachineExecutionStatus.RUN_TO_SELECTED_STATE:
-                state_machine_execution_engine.run_to_selected_state(received_command[1])
+                state_machine_execution_engine.run_to_selected_state(received_command[1],
+                                                                     state_machine_id=sm.state_machine_id)
 
         elif message.message_type is MessageType.UNREGISTER:
             network_manager_model.set_connected_status(address, "disconnected")

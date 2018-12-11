@@ -33,6 +33,7 @@ class MonitoringClient(UdpClient):
         self.registered_to_execution_engine = False
         self.registered_to_server = False
         self.disabled = False
+        self.last_active_state_machine = None
 
     @defer.inlineCallbacks
     def connect(self):
@@ -103,8 +104,14 @@ class MonitoringClient(UdpClient):
             if message.message_type is MessageType.STATE_ID:
                 (state_path, execution_status) = message.message_content.split("@")
                 state_execution_status = StateExecutionStatus(int(execution_status))
-                current_state = state_machine_manager.get_active_state_machine().get_state_by_path(state_path)
-                current_state.state_execution_status = state_execution_status
+                active_state_machine = state_machine_manager.get_active_state_machine()
+                if active_state_machine:
+                    current_state = active_state_machine.get_state_by_path(state_path)
+                    current_state.state_execution_status = state_execution_status
+                    self.last_active_state_machine = active_state_machine
+                elif self.last_active_state_machine:
+                    current_state = self.last_active_state_machine.get_state_by_path(state_path)
+                    current_state.state_execution_status = state_execution_status
             if message.message_type is MessageType.UNREGISTER:
                 if network_manager_model.get_connected_status(address) is not "disconnected":
                     logger.info("Disconnected by {0}".format(global_network_config.get_config_value("SERVER_IP")))

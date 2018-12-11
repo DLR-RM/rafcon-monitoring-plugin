@@ -1,6 +1,7 @@
 
 from rafcon.core.execution.execution_engine import ExecutionEngine
 from rafcon.core.execution.execution_status import StateMachineExecutionStatus
+from rafcon.core.singleton import state_machine_manager, state_machine_execution_engine
 from monitoring.model.network_model import network_manager_model
 from acknowledged_udp.protocol import Protocol, MessageType
 
@@ -22,14 +23,24 @@ class MonitoringExecutionEngine(ExecutionEngine):
 
     # overwrite all execution functions
     def start(self,  state_machine_id=None, start_state_path=None):
-        self.set_execution_mode(StateMachineExecutionStatus.STARTED)
-        if start_state_path:
-            logger.info("Starting state machine on remote server from path {0} ...".format(start_state_path))
-            protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + start_state_path)
-            self.send_current_execution_mode(protocol)
+        assert state_machine_id
+        if not state_machine_execution_engine.finished_or_stopped():
+            # this is a resume
+            self.set_execution_mode(StateMachineExecutionStatus.STARTED)
+            pass
         else:
-            logger.info("Starting state machine on remote server ...")
-            self.send_current_execution_mode()
+            self.set_execution_mode(StateMachineExecutionStatus.STARTED)
+            # if the first call of a start is a resume (e.g. if the remote server started and paused the sm)
+            # then setting the active_state_machine_id will fail as during execution it must not be changed
+            # thus we use the protected setter here
+            self.state_machine_manager._active_state_machine_id = state_machine_id
+            if start_state_path:
+                logger.info("Starting state machine on remote server from path {0} ...".format(start_state_path))
+                protocol = Protocol(MessageType.COMMAND, str(self.status.execution_mode.value) + "@" + start_state_path)
+                self.send_current_execution_mode(protocol)
+            else:
+                logger.info("Starting state machine on remote server ...")
+                self.send_current_execution_mode()
 
     def pause(self):
         self.set_execution_mode(StateMachineExecutionStatus.PAUSED)
@@ -40,8 +51,11 @@ class MonitoringExecutionEngine(ExecutionEngine):
         self.set_execution_mode(StateMachineExecutionStatus.STOPPED)
         logger.info("Stopping state machine on remote server ...")
         self.send_current_execution_mode()
+        self.state_machine_manager.active_state_machine_id = None
 
     def step_mode(self, state_machine_id=None):
+        assert state_machine_id
+        self.state_machine_manager.active_state_machine_id = state_machine_id
         # selecting another state_machine is not supported yet!
         self.set_execution_mode(StateMachineExecutionStatus.FORWARD_INTO)
         logger.info("Step mode activated on remote server ...")
@@ -67,8 +81,10 @@ class MonitoringExecutionEngine(ExecutionEngine):
         logger.info("Step backward on remote server ...")
         self.send_current_execution_mode()
 
-    def run_to_selected_state(self, path):
+    def run_to_selected_state(self, path, state_machine_id=None):
+        assert state_machine_id
         logger.info("Run to selected state on remote server ...")
+        self.state_machine_manager.active_state_machine_id = state_machine_id
         self.run_to_states = []
         self.run_to_states.append(path)
         self.set_execution_mode(StateMachineExecutionStatus.RUN_TO_SELECTED_STATE)

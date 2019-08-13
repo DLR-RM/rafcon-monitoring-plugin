@@ -1,17 +1,20 @@
 import time
 import sys
+from twisted.internet import defer
+from threading import Thread
+
 from monitoring_execution_engine import MonitoringExecutionEngine
 from acknowledged_udp.udp_client import UdpClient
 from acknowledged_udp.protocol import Protocol, MessageType
 from acknowledged_udp.config import global_network_config
+
+import rafcon
 from rafcon.core.singleton import state_machine_manager, state_machine_execution_engine
 from rafcon.core.states.state import StateExecutionStatus
-import rafcon
-from monitoring.model.network_model import network_manager_model
+from rafcon.gui.singleton import state_machine_manager_model
 from rafcon.utils import log
-from twisted.internet import defer
 
-from threading import Thread
+from monitoring.model.network_model import network_manager_model
 from monitoring.ping_endpoint import ping_endpoint
 
 logger = log.get_logger(__name__)
@@ -89,6 +92,7 @@ class MonitoringClient(UdpClient):
         :param address: the address where the message originates
         :return:
         """
+
         assert isinstance(message, Protocol)
         network_manager_model.add_to_message_list(message, address, "received")
 
@@ -105,6 +109,8 @@ class MonitoringClient(UdpClient):
                 (state_path, execution_status) = message.message_content.split("@")
                 state_execution_status = StateExecutionStatus(int(execution_status))
                 active_state_machine = state_machine_manager.get_active_state_machine()
+                if not active_state_machine:
+                    active_state_machine = state_machine_manager_model.get_selected_state_machine_model().state_machine
                 if active_state_machine:
                     current_state = active_state_machine.get_state_by_path(state_path)
                     current_state.state_execution_status = state_execution_status

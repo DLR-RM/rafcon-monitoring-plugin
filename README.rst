@@ -1,8 +1,45 @@
-.. image:: http://buildbot.robotic.dlr.de:8010/badge.png?builder=common/rafcon_monitoring_plugin&branch=master
-   :target: http://buildbot.robotic.dlr.de:8010/builders/common%2Frafcon_monitoring_plugin/
-
-
-Rafcon Monitoring Plugin
+RAFCON Monitoring Plugin
 ========================
 
-A rafcon plugin to remotely montior a rafcon state machine.
+A RAFCON plugin to remotely monitor and control state machines.
+
+
+Features:
+*********
+
+* RAFCON can be started as server or as client
+* Clients get the information of currently active states, and visualize them by highlighting the active states
+* Clients can send execution commands (start, stop, pause, step) to the server
+* Communication is done via UDP: thus it can cope with signal delays of several seconds
+
+Not supported Features:
+***********************
+
+* Console Log is currently not forwarded (Console log can be analyzed in ssh shell)
+* Execution history is currently not forwarded (use execution_log_viewer by first copying file from remote system via ssh)
+* As this is a monitoring plugin, making state machine changes is not possible
+
+
+Installation on Ubuntu 16.04 - 18.04:
+*************************************
+
+Install pygobject (needed for pygtkcompat):
+
+Execute commands of "Installing from PyPI with pip" of: https://pygobject.readthedocs.io/en/latest/getting_started.html#ubuntu-logo-ubuntu-debian-logo-debian
+
+Install twisted via:
+pip2.7 install --user --upgrade twisted
+
+
+Running monitoring plugin:
+**************************
+
+See https://rafcon.readthedocs.io/en/latest/tutorials.html#using-the-monitoring-plugin
+
+Before being able to launch the plugin add it to the RAFCON_PLUGIN_PATH environment variable:
+
+export RAFCON_PLUGIN_PATH=/path/to/repo/rafcon_monitoring_plugin/python/monitoring
+
+Information about the configuration can be found on: https://rafcon.readthedocs.io/en/latest/configuration.html#monitoring-plugin-configuration
+
+

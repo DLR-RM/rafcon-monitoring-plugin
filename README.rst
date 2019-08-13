@@ -11,6 +11,8 @@ Features:
 * Clients get the information of currently active states, and visualize them by highlighting the active states
 * Clients can send execution commands (start, stop, pause, step) to the server
 * Communication is done via UDP: thus it can cope with signal delays of several seconds
+* Multiple clients can connect to the server (also from different IPs)
+* Network Tab shows the ping to other endpoints
 
 Not supported Features:
 ***********************

@@ -10,7 +10,7 @@ from acknowledged_udp.config import global_network_config
 
 import rafcon
 from rafcon.core.singleton import state_machine_manager, state_machine_execution_engine
-from rafcon.core.states.state import StateExecutionStatus
+from rafcon.core.states.state import StateExecutionStatus, State
 from rafcon.gui.singleton import state_machine_manager_model
 from rafcon.utils import log
 
@@ -85,6 +85,16 @@ class MonitoringClient(UdpClient):
         else:
             logger.info("Cannot connect to server: Client disabled!")
 
+    def _recursively_mark_state_parents_active(self, state, state_execution_status):
+        # parent will be set to inactive explicitly; thus it must not be done here
+        new_status_to_set = StateExecutionStatus.ACTIVE
+        if isinstance(state.parent, State):
+            if state.parent.state_execution_status is not state_execution_status:
+                state.parent.state_execution_status = new_status_to_set
+            return self._recursively_mark_state_parents_active(state.parent, state_execution_status)
+        else:
+            pass  # reached root state
+
     def monitoring_data_received_function(self, message, address):
         """
         A function that orchestrates and processes the received messages
@@ -114,6 +124,7 @@ class MonitoringClient(UdpClient):
                 if active_state_machine:
                     current_state = active_state_machine.get_state_by_path(state_path)
                     current_state.state_execution_status = state_execution_status
+                    self._recursively_mark_state_parents_active(current_state, state_execution_status)
                     self.last_active_state_machine = active_state_machine
                 elif self.last_active_state_machine:
                     current_state = self.last_active_state_machine.get_state_by_path(state_path)

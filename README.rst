@@ -2,6 +2,7 @@ RAFCON Monitoring Plugin
 ========================
 
 A RAFCON plugin to remotely monitor and control state machines.
+[This is development code. We don't give support for this code yet.]
 
 
 Features:
@@ -25,12 +26,21 @@ Not supported Features:
 Installation on Ubuntu 16.04 - 18.04:
 *************************************
 
-Install pygobject (needed for pygtkcompat):
-
-Execute commands of "Installing from PyPI with pip" of: https://pygobject.readthedocs.io/en/latest/getting_started.html#ubuntu-logo-ubuntu-debian-logo-debian
+Install pygobject (needed for pygtkcompat) by execute commands of "Installing from PyPI with pip" of:
+https://pygobject.readthedocs.io/en/latest/getting_started.html#ubuntu-logo-ubuntu-debian-logo-debian
 
 Install twisted via:
-pip2.7 install --user --upgrade twisted
+
+.. code-block:: bash
+
+    pip2.7 install --user --upgrade twisted
+
+Clone python_acknowledged_udb and add to PYTHONPATH:
+
+.. code-block:: bash
+
+    git clone https://github.com/DLR-RM/python-acknowledged-udp.git
+    export PYTHONPATH=$PYTHONPATH:/path/to/your/clone
 
 
 Running monitoring plugin:
